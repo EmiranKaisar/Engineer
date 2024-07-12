@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 public class PlayerController : MonoBehaviour
 {
@@ -13,13 +14,20 @@ public class PlayerController : MonoBehaviour
 	[SerializeField] private Transform m_GroundCheck;							// A position marking where to check if the player is grounded.
 	[SerializeField] private Transform m_CeilingCheck;							// A position marking where to check for ceilings
 	[SerializeField] private Collider2D m_CrouchDisableCollider;				// A collider that will be disabled when crouching
+	[SerializeField] private Transform[] m_WallChecks;
 
 	const float k_GroundedRadius = .2f; // Radius of the overlap circle to determine if grounded
 	private bool m_Grounded;            // Whether or not the player is grounded.
+	private const float k_WalledRadius = .2f;
+	private bool m_Walled;
 	const float k_CeilingRadius = .2f; // Radius of the overlap circle to determine if the player can stand up
 	private Rigidbody2D m_Rigidbody2D;
 	private bool m_FacingRight = true;  // For determining which way the player is currently facing.
 	private Vector3 m_Velocity = Vector3.zero;
+
+	public float gravity = 20;
+
+	private float jumpRadiance = Mathf.PI/3;
 
 	[Header("Events")]
 	[Space]
@@ -33,6 +41,8 @@ public class PlayerController : MonoBehaviour
 
 	private bool m_wasCrouching = false;
 
+	private GameObject groundObj;
+	private GameObject wallObj;
 	private GameObject candidateObj;
 
 	private void Awake()
@@ -48,37 +58,76 @@ public class PlayerController : MonoBehaviour
 
 	private void FixedUpdate()
 	{
-		bool wasGrounded = m_Grounded;
-		m_Grounded = false;
+		CheckGround();
+		CheckWall();
+		AssignCandidate();
+	}
 
-		// The player is grounded if a circlecast to the groundcheck position hits anything designated as ground
-		// This can be done using layers instead but Sample Assets will not overwrite your project settings.
+	private void CheckGround()
+	{
+		m_Grounded = false;
+		groundObj = null;
 		Collider2D[] colliders = Physics2D.OverlapCircleAll(m_GroundCheck.position, k_GroundedRadius, m_WhatIsGround);
-		if(colliders.Length > 0)
-			candidateObj = colliders[colliders.Length -1].gameObject;
-		for (int i = 0; i < colliders.Length; i++)
+		if (colliders.Length > 0)
 		{
+			groundObj = colliders[colliders.Length -1].gameObject;
+			//candidateObj = colliders[colliders.Length -1].gameObject;
 			
 			
-			if (colliders[i].gameObject != gameObject)
+			
+		}
+	}
+
+	private void CheckWall()
+	{
+		m_Walled = false;
+		wallObj = null;
+		for (int i = 0; i < m_WallChecks.Length; i++)
+		{
+			Collider2D[] colliders = Physics2D.OverlapCircleAll(m_WallChecks[i].position, k_WalledRadius, m_WhatIsGround);
+			if (colliders.Length > 0)
 			{
+				wallObj = colliders[colliders.Length -1].gameObject;
+				//candidateObj = colliders[colliders.Length -1].gameObject;
 				
-				m_Grounded = true;
-				if (!wasGrounded)
+			}
+		}
+		
+	}
+
+	private void AssignCandidate()
+	{
+		if (groundObj != null)
+		{
+			candidateObj = groundObj;
+			if (!m_Grounded)
+				OnLandEvent.Invoke();
+			m_Grounded = true;
+		}
+		else
+		{
+			if (wallObj != null)
+			{
+				candidateObj = wallObj;
+				if (!m_Walled)
 					OnLandEvent.Invoke();
+				m_Walled = true;
 			}
 		}
 	}
 	
 	public void StampCandidate()
 	{
-		if(candidateObj != null)
-		   candidateObj.GetComponentInParent<ChunkClass>().StickTool(candidateObj);
+		if (candidateObj != null && (m_Grounded || m_Walled))
+		{
+			candidateObj.GetComponentInParent<ChunkClass>().StickTool(candidateObj);
+		}
+		   
 	}
 
 	public void CollectCandidate()
 	{
-		if (candidateObj != null)
+		if (candidateObj != null && (m_Grounded || m_Walled))
 		{
 			candidateObj.GetComponentInParent<ChunkClass>().CollectTool(candidateObj);
 		}
@@ -135,11 +184,9 @@ public class PlayerController : MonoBehaviour
 			// And then smoothing it out and applying it to the character
 			m_Rigidbody2D.velocity = Vector3.SmoothDamp(m_Rigidbody2D.velocity, targetVelocity, ref m_Velocity, m_MovementSmoothing);
 
-			if (m_Grounded)
-			{
-				if (candidateObj != null && candidateObj.CompareTag("Stickable"))
-					this.transform.position += new Vector3(candidateObj.GetComponentInParent<ChunkClass>().accumulatedMove.x*Time.fixedDeltaTime, 0, 0);
-			}
+
+			PropAffectedMove(move);
+			
 
 			// If the input is moving the player right and the player is facing left...
 			if (move > 0 && !m_FacingRight)
@@ -155,12 +202,83 @@ public class PlayerController : MonoBehaviour
 			}
 		}
 		// If the player should jump...
-		if (m_Grounded && jump)
+		if ((m_Grounded || m_Walled) && jump)
 		{
 			// Add a vertical force to the player.
 			m_Grounded = false;
-			m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
+			m_Rigidbody2D.AddForce(jumpDirection*m_JumpForce);
 		}
+		
+		ApplyGravity();
+	}
+
+	private float friction = 16;
+	private Vector2 jumpDirection;
+	private void PropAffectedMove(float horizontalInput)
+	{
+		jumpDirection = new Vector2(0, 1);
+		if (m_Grounded)
+		{
+			if (candidateObj != null && candidateObj.CompareTag("Stickable"))
+				this.transform.position += new Vector3(candidateObj.GetComponentInParent<ChunkClass>().accumulatedMove.x*Time.fixedDeltaTime, 0, 0);
+		}
+
+		if (m_Walled)
+		{
+			if (candidateObj != null && candidateObj.CompareTag("Stickable"))
+			{
+				Vector2 frictionForce = new Vector2();
+				if (candidateObj.transform.position.x > this.transform.position.x)
+				{
+					
+					if (horizontalInput > 0)
+					{
+						m_Rigidbody2D.velocity = new Vector2(0, m_Rigidbody2D.velocity.y);
+						this.transform.position += new Vector3(candidateObj.GetComponentInParent<ChunkClass>().accumulatedMove.x*Time.fixedDeltaTime, 0, 0);
+						if (m_Rigidbody2D.velocity.y <= 0)
+						{
+							frictionForce = new Vector2(0, friction);
+						}
+
+						jumpDirection = new Vector2(Mathf.Cos(Mathf.PI - jumpRadiance), Mathf.Sin(Mathf.PI - jumpRadiance));
+					}
+					
+					
+					
+						
+				}
+				else
+				{
+					if (horizontalInput < 0)
+					{
+						m_Rigidbody2D.velocity = new Vector2(0, m_Rigidbody2D.velocity.y);
+						this.transform.position += new Vector3(candidateObj.GetComponentInParent<ChunkClass>().accumulatedMove.x*Time.fixedDeltaTime, 0, 0);
+						if (m_Rigidbody2D.velocity.y <= 0)
+						{
+							frictionForce = new Vector2(0, friction);
+						}
+						
+						jumpDirection = new Vector2(Mathf.Cos(jumpRadiance), Mathf.Sin(jumpRadiance));
+					}
+				}
+				
+				m_Rigidbody2D.AddForce(frictionForce);
+			}
+			
+			
+				
+		}
+	}
+
+	//if walled and 
+	private void ClingWall()
+	{
+		
+	}
+
+	private void ApplyGravity()
+	{
+		m_Rigidbody2D.AddForce(new Vector2(0f, -gravity));
 	}
 
 

@@ -78,7 +78,9 @@ public class GameManager : MonoBehaviour
             AddButtonListener(i);
         }
     }
-
+    
+    //original sprite should be operated due to the localRotation
+    //tool sprite should be with worldRotation
     public void OperateUIDirection(GameObject obj, int toolDir)
     {
         Vector3 theScale = obj.transform.localScale;

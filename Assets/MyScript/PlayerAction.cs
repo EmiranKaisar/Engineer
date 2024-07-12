@@ -13,6 +13,11 @@ public class PlayerAction : MonoBehaviour
 
     private bool jump;
 
+    private bool clingRightWall;
+
+    private bool clingLeftWall;
+    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -38,6 +43,9 @@ public class PlayerAction : MonoBehaviour
         {
             playerController.CollectCandidate();
         }
+        
+        
+        
 
     }
 
