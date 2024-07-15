@@ -83,30 +83,45 @@ public class GameManager : MonoBehaviour
     //tool sprite should be with worldRotation
     public void OperateUIDirection(GameObject obj, int toolDir)
     {
-        Vector3 theScale = obj.transform.localScale;
-        if (theScale.x < 0)
+        if (toolDir <= 3)
         {
-            theScale.x *= -1;
-            obj.transform.localScale = theScale;
+            obj.transform.rotation = Quaternion.AngleAxis(90*toolDir, Vector3.forward);
         }
-            
-        obj.transform.localRotation = Quaternion.identity;
+        else
+        {
+            obj.transform.rotation = Quaternion.AngleAxis(180, Vector3.up);
+        }
         
-        switch (toolDir)
-        {
-            case 0:
-                return;
-            case 1:
-                theScale.x *= -1;
-                obj.transform.localScale = theScale;
-                return;
-            case 2:
-                obj.transform.localRotation = Quaternion.AngleAxis(90, Vector3.forward);
-                return;
-            case 3:
-                obj.transform.localRotation = Quaternion.AngleAxis(90, Vector3.back);
-                return;
-        }
+        // Vector3 theScale = obj.transform.localScale;
+        // if (theScale.x < 0)
+        // {
+        //     theScale.x *= -1;
+        //     obj.transform.localScale = theScale;
+        // }
+        //     
+        // obj.transform.localRotation = Quaternion.identity;
+        //
+        // switch (toolDir)
+        // {
+        //     case 0:
+        //         return;
+        //     case 1:
+        //         theScale.x *= -1;
+        //         obj.transform.localScale = theScale;
+        //         return;
+        //     case 2:
+        //         obj.transform.localRotation = Quaternion.AngleAxis(90, Vector3.forward);
+        //         return;
+        //     case 3:
+        //         obj.transform.localRotation = Quaternion.AngleAxis(90, Vector3.back);
+        //         return;
+        // }
+    }
+    
+    //when put in the world, it should be based on the world transform
+    public void OperateDirection(GameObject obj, int dir)
+    {
+        obj.transform.rotation = Quaternion.AngleAxis(90*dir, Vector3.forward);
     }
 
     private void AddButtonListener(int index)

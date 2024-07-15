@@ -11,9 +11,10 @@ public enum ToolEnum
 public enum ToolDirection
 {
     Original,
-    Flip,
-    PlusNinetyDegree,
-    MinusNinetyDegree
+    Up,
+    Left,
+    Down,
+    Flip
 }
 
 public enum LevelType

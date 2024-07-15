@@ -1573,6 +1573,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 1
   rotateSpeed: 1
+  rotateDur: 2
   chunkChildList:
   - sticked: 0
     toolID: -1
@@ -3187,6 +3188,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 1
   rotateSpeed: 1
+  rotateDur: 2
   chunkChildList:
   - sticked: 0
     toolID: -1
@@ -3912,6 +3914,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 0.5
   rotateSpeed: 2
+  rotateDur: 2
   chunkChildList:
   - sticked: 0
     toolID: -1
@@ -4221,6 +4224,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 0.5
   rotateSpeed: 2
+  rotateDur: 2
   chunkChildList:
   - sticked: 0
     toolID: -1
@@ -7468,6 +7472,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 1
   rotateSpeed: 1
+  rotateDur: 2
   chunkChildList:
   - sticked: 0
     toolID: -1
@@ -7537,6 +7542,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 0.5
   rotateSpeed: 2
+  rotateDur: 2
   chunkChildList:
   - sticked: 0
     toolID: -1

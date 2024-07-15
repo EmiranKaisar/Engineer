@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UIElements;
 
 public class ChunkClass : MonoBehaviour
 {
@@ -14,8 +15,9 @@ public class ChunkClass : MonoBehaviour
 
     public float moveSpeed = 1;
     public float rotateSpeed = 1;
-    
-    
+    public float rotateDur = 2;
+
+
     [Serializable]
     public class StickableClass
     {
@@ -26,21 +28,19 @@ public class ChunkClass : MonoBehaviour
         public int originalSpriteDir;
         public GameObject stickablObj;
     }
-    
-    [SerializeField]
-    public List<StickableClass> chunkChildList = new List<StickableClass>();
+
+    [SerializeField] public List<StickableClass> chunkChildList = new List<StickableClass>();
 
     private Transform chunkTransform;
 
     private List<Vector3> relevantPos = new List<Vector3>();
-    
-    //maintain a list for rotater, first rotater should be the centre
-    private List<int> rotaterIndexList = new List<int>();
 
     private Vector3 presentCentre;
 
     private bool ifSticked = false;
-    
+
+    private int rotateCount = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -56,8 +56,8 @@ public class ChunkClass : MonoBehaviour
         UpdateCentre();
         MoveChunkToCentre();
         UpdateIfChunkSticked();
-        if(ifSticked)
-           CalculatePresentKinematic();
+        if (ifSticked)
+            CalculatePresentKinematic();
     }
 
     private void UpdateRelevantPos()
@@ -95,9 +95,8 @@ public class ChunkClass : MonoBehaviour
 
     private void MoveChunkToCentre()
     {
-
         Vector3 offset = chunkTransform.position - presentCentre;
-        
+
         foreach (var item in chunkChildList)
         {
             item.stickablObj.transform.position += offset;
@@ -110,44 +109,42 @@ public class ChunkClass : MonoBehaviour
     {
         int index = ReturnIndexByObj(obj);
         BagTool selectedTool = BagManager.Instance.PresentSelectedBagTool();
-        if (index >= 0 && !chunkChildList[index].sticked && selectedTool.toolID >= 0)
+        if (index >= 0 && !chunkChildList[index].sticked && selectedTool.toolID >= 0 && !inRotateProcedure)
         {
             chunkChildList[index].sticked = true;
             chunkChildList[index].toolID = selectedTool.toolID;
             chunkChildList[index].toolDir = selectedTool.toolDirection;
             obj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite(selectedTool.toolID);
             GameManager.Instance.OperateUIDirection(obj, selectedTool.toolDirection);
-            
+
             BagManager.Instance.DeleteSelectedTool();
             UpdateRelevantPos();
             UpdateCentre();
             MoveChunkToCentre();
             CalculatePresentKinematic();
         }
-        
     }
 
     public void CollectTool(GameObject obj)
     {
         int index = ReturnIndexByObj(obj);
-        
-        if (index >= 0 && chunkChildList[index].sticked)
+
+        if (index >= 0 && chunkChildList[index].sticked && !inRotateProcedure)
         {
             BagManager.Instance.AddTool(new BagTool(chunkChildList[index].toolID, chunkChildList[index].toolDir));
             chunkChildList[index].sticked = false;
             chunkChildList[index].toolID = -1;
             chunkChildList[index].toolDir = -1;
-            obj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite(chunkChildList[index].originalSpriteID);
+            obj.GetComponent<SpriteRenderer>().sprite =
+                SpriteManager.Instance.ReturnToolSprite(chunkChildList[index].originalSpriteID);
             GameManager.Instance.OperateUIDirection(obj, chunkChildList[index].originalSpriteDir);
-            
+
             UpdateRelevantPos();
             UpdateCentre();
             MoveChunkToCentre();
             UpdateIfChunkSticked();
             CalculatePresentKinematic();
         }
-        
-        
     }
 
     private void UpdateIfChunkSticked()
@@ -162,69 +159,115 @@ public class ChunkClass : MonoBehaviour
 
 
     public Vector3 accumulatedMove = Vector3.zero;
-    private float accumulatedRot = 0;
+    private float accumulatedRotDur;
+
     private void CalculatePresentKinematic()
     {
         accumulatedMove = Vector3.zero;
-        accumulatedRot = 0;
+        accumulatedRotDur = 2 * rotateDur;
+        rotateCount = 0;
         foreach (var item in chunkChildList)
         {
             if (item.toolID == 0)
-                accumulatedMove += MovementByDir(item.toolDir)*moveSpeed;
+            {
+                accumulatedMove += item.stickablObj.transform.right * moveSpeed;
+            }
+
 
             if (item.toolID == 1)
-                accumulatedRot += RotByDir(item.toolDir);
+            {
+                rotateCount++;
+                accumulatedRotDur *= 0.5f;
+            }
         }
     }
 
-    private Vector3 MovementByDir(int dir)
+    private void UpdateAfterRotation()
     {
-        Vector3 movement = Vector3.zero;
-        if (dir == 0)
+        accumulatedMove = Vector3.zero;
+        foreach (var item in chunkChildList)
         {
-            movement = new Vector3(1, 0, 0);
-        }else if (dir == 1)
-        {
-            movement = new Vector3(-1, 0, 0);
-        }else if (dir == 2)
-        {
-            movement = new Vector3(0, 1, 0);
-        }else if (dir == 3)
-        {
-            movement = new Vector3(0, -1, 0);
+            if (item.toolID == 0)
+            {
+                accumulatedMove += item.stickablObj.transform.right * moveSpeed;
+                UpdateToolDirection(item);
+            }
         }
-
-        return movement;
     }
 
-    private float RotByDir(int dir)
-    {
-        float rot = 0;
+    private Vector3[] compareAxis = new[]
+        { new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(-1, 0, 0), new Vector3(0, -1, 0) };
 
-        if (dir == 0)
+    private Vector3 flipCompareAxis = new Vector3(0, 0, 1);
+    private void UpdateToolDirection(StickableClass item)
+    {
+        if (item.toolID == 1)
         {
-            rot = rotateSpeed;
-        }else if (dir == 1)
-        {
-            rot = -rotateSpeed;
+            if (Vector3.Dot(item.stickablObj.transform.forward, flipCompareAxis) >= 1)
+            {
+                item.toolDir = (int) ToolDirection.Original;
+            }
+            else
+            {
+                item.toolDir = (int) ToolDirection.Flip;
+            }
         }
-
-        return rot;
+        else
+        {
+            for (int i = 0; i < compareAxis.Length; i++)
+            {
+                if (Vector3.Dot(item.stickablObj.transform.right, compareAxis[i]) >= 1)
+                    item.toolDir = i;
+            }
+        }
     }
-    
-    
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    private bool inRotateProcedure = false;
+    private float rotateTimer = 0;
+    private IEnumerator rotateProcedure;
 
     private void FixedUpdate()
     {
-        chunkTransform.position += accumulatedMove * Time.fixedDeltaTime;
-        chunkTransform.rotation *= Quaternion.AngleAxis(accumulatedRot * Time.fixedDeltaTime, Vector3.forward);
+        if (!inRotateProcedure)
+            chunkTransform.position += accumulatedMove * Time.fixedDeltaTime;
+
+        if (rotateCount > 0)
+        {
+            rotateTimer += Time.fixedDeltaTime;
+            if (rotateTimer >= accumulatedRotDur)
+            {
+                rotateTimer = 0;
+                if (rotateProcedure != null)
+                    StopCoroutine(rotateProcedure);
+                rotateProcedure = RotateProcedure(accumulatedRotDur * 0.8f);
+                StartCoroutine(rotateProcedure);
+            }
+        }
+        else
+        {
+            rotateTimer = 0;
+        }
     }
+
+    private IEnumerator RotateProcedure(float procedureDur)
+    {
+        //在此过程中，停止移动
+        inRotateProcedure = true;
+        float timer = 0;
+        Quaternion presentRot = chunkTransform.rotation;
+        Quaternion targetRot = presentRot * Quaternion.AngleAxis(90, Vector3.forward);
+        while (timer <= procedureDur)
+        {
+            timer += Time.fixedDeltaTime;
+            chunkTransform.rotation = Quaternion.Lerp(presentRot, targetRot, timer / procedureDur);
+            yield return null;
+        }
+
+        UpdateAfterRotation();
+
+        inRotateProcedure = false;
+    }
+
 
     #region API
 
@@ -239,7 +282,6 @@ public class ChunkClass : MonoBehaviour
 
         return index;
     }
-    
 
     #endregion
 }
