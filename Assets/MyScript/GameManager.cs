@@ -24,6 +24,19 @@ public class GameManager : MonoBehaviour
     
     private List<GameObject> toolItemUIList = new List<GameObject>();
 
+    [Serializable]
+    public class StateClass
+    {
+        public string StateName;
+        public string ActionName;
+        public GameObject UIObj;
+    }
+    
+    [SerializeField]
+    public List<StateClass> StateList;
+
+    private int homeIndex;
+
     public static GameManager Instance
     {
         get;
@@ -48,13 +61,63 @@ public class GameManager : MonoBehaviour
 
     private void InitGame()
     {
-        menuObj.SetActive(true);
-        resultUI.SetActive(false);
-        //get tool item UI obj
-        GetToolItemUIObjList();
-        //update appearance, bond action to it.
-        UpdateToolStoreItemUI();
+        InitUI();
+        
+        // menuObj.SetActive(true);
+        // resultUI.SetActive(false);
+        //
+        // //get tool item UI obj
+        // GetToolItemUIObjList();
+        // //update appearance, bond action to it.
+        // UpdateToolStoreItemUI();
         //pause the game
+    }
+    
+    private void InitUI()
+    {
+        int i = 0;
+        foreach (var item in StateList)
+        {
+            item.UIObj.SetActive(false);
+            if(item.StateName == "Home")
+                homeIndex = i;
+        
+            i++;
+        }
+
+        ShowUI(homeIndex);
+    }
+
+    private int presentStateIndex = 0;
+
+    private int previousStateIndex = 0;
+    //根据玩家的输入跳转到对应的游戏状态
+    public void StateButtonAction(string _actionName)
+    {
+        presentStateIndex = ReturnIndexByActionName(_actionName);
+
+        if(presentStateIndex != previousStateIndex){
+            UpdateState();
+            previousStateIndex = presentStateIndex;
+        }
+    }
+    
+    
+    private void UpdateState()
+    {
+        HideUI(previousStateIndex);
+        ShowUI(presentStateIndex);
+    }
+    
+    private void HideUI(int _index)
+    {
+        StateList[_index].UIObj.SetActive(false);
+    }
+
+    //显示对应的UI
+    private void ShowUI(int _index)
+    {
+        StateList[_index].UIObj.SetActive(true);
     }
 
     private void GetToolItemUIObjList()
@@ -142,6 +205,21 @@ public class GameManager : MonoBehaviour
         menuObj.SetActive(true);
         resultUI.SetActive(true);
         resultUI.GetComponentInChildren<TMP_Text>().text = result;
+    }
+    
+    private int ReturnIndexByActionName(string _actionName)
+    {
+        int i = 0;
+        int returnIndex = -1;
+        foreach (var item in StateList)
+        {
+            if(item.ActionName == _actionName)
+                returnIndex = i;
+
+            i++;     
+        }
+
+        return returnIndex;
     }
     
     
