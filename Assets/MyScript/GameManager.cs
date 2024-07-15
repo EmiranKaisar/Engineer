@@ -92,36 +92,6 @@ public class GameManager : MonoBehaviour
             obj.transform.rotation = Quaternion.AngleAxis(180, Vector3.up);
         }
         
-        // Vector3 theScale = obj.transform.localScale;
-        // if (theScale.x < 0)
-        // {
-        //     theScale.x *= -1;
-        //     obj.transform.localScale = theScale;
-        // }
-        //     
-        // obj.transform.localRotation = Quaternion.identity;
-        //
-        // switch (toolDir)
-        // {
-        //     case 0:
-        //         return;
-        //     case 1:
-        //         theScale.x *= -1;
-        //         obj.transform.localScale = theScale;
-        //         return;
-        //     case 2:
-        //         obj.transform.localRotation = Quaternion.AngleAxis(90, Vector3.forward);
-        //         return;
-        //     case 3:
-        //         obj.transform.localRotation = Quaternion.AngleAxis(90, Vector3.back);
-        //         return;
-        // }
-    }
-    
-    //when put in the world, it should be based on the world transform
-    public void OperateDirection(GameObject obj, int dir)
-    {
-        obj.transform.rotation = Quaternion.AngleAxis(90*dir, Vector3.forward);
     }
 
     private void AddButtonListener(int index)

@@ -13,9 +13,8 @@ public class ChunkClass : MonoBehaviour
     //通过子集和父亲的相对移动来调整中心位置
     //chunk的速度应该在gameManager中确定
 
-    public float moveSpeed = 1;
-    public float rotateSpeed = 1;
-    public float rotateDur = 2;
+    private float moveSpeed = 1;
+    private float rotateDur = 2;
 
 
     [Serializable]
@@ -44,10 +43,18 @@ public class ChunkClass : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //init parameters
+        InitParameters();
         //init centre
+        InitCentre();
+    }
+
+    private void InitParameters()
+    {
         ifSticked = false;
         chunkTransform = this.transform;
-        InitCentre();
+        moveSpeed = GlobalParameters.Instance.moveToolSpeed;
+        rotateDur = GlobalParameters.Instance.rotateToolDur;
     }
 
     private void InitCentre()

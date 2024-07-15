@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,31 +8,31 @@ public class GlobalParameters : MonoBehaviour
 {
     public int presentLevelID = 0;
     
-    public float rotateToolSpeed = 2;
+    public float rotateToolDur = 2;
 
     public float moveToolSpeed = 1;
 
     public bool editMode = false;
-    
-    //the info of level can be saved in local file
-    //that can be created and shared
-    public class LevelInfo
+
+    public static GlobalParameters Instance
     {
-        public int levelID;
-        public List<PropTool> scenePropTools;
-        public int levelType;
+        get;
+        private set;
     }
-    
-    
-    
-    private string filePath;
-    private string textToWrite;
-    
-    public class TestData
+
+    private void Awake()
     {
-        public string test;
-        public int test1;
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+            return;
+        }
+
+        Instance = this;
+        
+        
     }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -41,27 +42,34 @@ public class GlobalParameters : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (editMode)
+        {
+            //present editor UI
+            
+            //1. At first, one is presented with the list of existing levels, and can create a new one. 
+            //2. In either way, when entered in a level, there are a side bar for 3 types of props: Block, tool, Start/End Point.
+            //3. When clicked one of the props, one can place the prop in the grid of the scene just like tilemap in unity
+            //4. There is a default size of the scene, however when props are located outside, the size of the scene is decided by the region surrounding all props.
+            //5. Can select a tile and delete it with a delete button
+            //6. Can save the level
+            
+            
+        }
+        else
+        {
+            //close editor UI
+            
+        }
+    }
+
+    public void SaveLevel(int index)
+    {
         
     }
-    
-    public void WriteFile()
-    {
-        filePath = Application.persistentDataPath + "/test.txt";
-        // ����Ҫд����ı�
-        textToWrite = "Hello, World!";
 
-        // ���ı�д���ļ�
-        File.WriteAllText(filePath, textToWrite);
+    public void LoadLevel(int index)
+    {
+        
     }
 
-    public void ReadFile()
-    {
-        string filePath = Application.persistentDataPath + "/playerData.json";
-        string json = File.ReadAllText(filePath);
-
-        // �����л�JSON�ַ���Ϊ����
-        TestData playerData = JsonUtility.FromJson<TestData>(json);
-
-        Debug.Log(playerData.test);
-    }
 }

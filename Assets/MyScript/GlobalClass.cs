@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using System.Collections.Generic;
 
 [Serializable]
 public struct BagTool
@@ -17,7 +18,13 @@ public struct PropTool
 {
     public int toolID;
     public int toolDirection;
-    public int originalID;
-    public int originalDir;
-    public Vector3 toolPos;
+    public float[] toolPos;
+}
+
+public class LevelInfo
+{
+    public int levelID;
+    public float[] playerInstantiatePos;
+    public List<PropTool> scenePropTools;
+    public int levelType;
 }
