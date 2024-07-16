@@ -4,9 +4,8 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Tool
-  - Flag
   - Stickable
+  - Chunk
   layers:
   - Default
   - TransparentFX

@@ -50,8 +50,8 @@ public class BagManager : MonoBehaviour
         {
             BagItemUIList[currentBagList.Count].SetActive(true);
             BagItemUIList[currentBagList.Count].GetComponent<Image>().sprite =
-                SpriteManager.Instance.ReturnToolSprite(tool.toolID);
-            GameManager.Instance.OperateUIDirection(BagItemUIList[currentBagList.Count].gameObject, tool.toolDirection);
+                SpriteManager.Instance.ReturnToolSprite((int)tool.toolID);
+            GlobalMethod.OperateUIDirection(BagItemUIList[currentBagList.Count].gameObject, (int)tool.toolDirection);
             currentBagList.Add(tool);
         }
            
@@ -68,8 +68,8 @@ public class BagManager : MonoBehaviour
             for (int i = 0; i < currentBagList.Count; i++)
             {
                 BagItemUIList[i].GetComponent<Image>().sprite =
-                    SpriteManager.Instance.ReturnToolSprite(currentBagList[i].toolID);
-                GameManager.Instance.OperateUIDirection(BagItemUIList[i].gameObject, currentBagList[i].toolDirection);
+                    SpriteManager.Instance.ReturnToolSprite((int)currentBagList[i].toolID);
+                GlobalMethod.OperateUIDirection(BagItemUIList[currentBagList.Count].gameObject, (int)currentBagList[i].toolDirection);
             }
         }
     }
@@ -81,7 +81,7 @@ public class BagManager : MonoBehaviour
             return currentBagList[0];
         else
         {
-            return new BagTool(-1, -1);
+            return new BagTool(ToolEnum.Trap, ToolDirection.Original);
         }
     }
 

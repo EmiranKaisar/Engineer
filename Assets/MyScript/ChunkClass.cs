@@ -21,10 +21,9 @@ public class ChunkClass : MonoBehaviour
     public class StickableClass
     {
         public bool sticked = false;
-        public int toolID;
-        public int toolDir;
-        public int originalSpriteID;
-        public int originalSpriteDir;
+        public bool cleared = false;
+        public ToolEnum toolID;
+        public ToolDirection toolDir;
         public GameObject stickablObj;
     }
 
@@ -43,16 +42,36 @@ public class ChunkClass : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        InitProp();
         //init parameters
         InitParameters();
         //init centre
         InitCentre();
     }
 
+    public void InitChunk()
+    {
+        InitProp();
+        //init parameters
+        InitParameters();
+        //init centre
+        InitCentre();
+    }
+
+    private void InitProp()
+    {
+        chunkTransform = this.transform;
+        foreach (var item in chunkChildList)
+        {
+            item.stickablObj.GetComponent<SpriteRenderer>().sprite =
+                SpriteManager.Instance.ReturnToolSprite((int)item.toolID);
+        }
+    }
+
     private void InitParameters()
     {
         ifSticked = false;
-        chunkTransform = this.transform;
+        
         moveSpeed = GlobalParameters.Instance.moveToolSpeed;
         rotateDur = GlobalParameters.Instance.rotateToolDur;
     }
@@ -73,7 +92,7 @@ public class ChunkClass : MonoBehaviour
         int rotaterCount = 0;
         foreach (var item in chunkChildList)
         {
-            if (item.toolID == 1)
+            if (item.toolID == ToolEnum.Rotate)
             {
                 rotaterCount++;
                 relevantPos.Add(item.stickablObj.transform.position);
@@ -121,8 +140,9 @@ public class ChunkClass : MonoBehaviour
             chunkChildList[index].sticked = true;
             chunkChildList[index].toolID = selectedTool.toolID;
             chunkChildList[index].toolDir = selectedTool.toolDirection;
-            obj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite(selectedTool.toolID);
-            GameManager.Instance.OperateUIDirection(obj, selectedTool.toolDirection);
+            obj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)selectedTool.toolID);
+            //GameManager.Instance.OperateUIDirection(obj, selectedTool.toolDirection);
+            GlobalMethod.OperateUIDirection(obj, (int)selectedTool.toolDirection);
 
             BagManager.Instance.DeleteSelectedTool();
             UpdateRelevantPos();
@@ -140,11 +160,10 @@ public class ChunkClass : MonoBehaviour
         {
             BagManager.Instance.AddTool(new BagTool(chunkChildList[index].toolID, chunkChildList[index].toolDir));
             chunkChildList[index].sticked = false;
-            chunkChildList[index].toolID = -1;
-            chunkChildList[index].toolDir = -1;
+            chunkChildList[index].toolID = ToolEnum.Block;
+            chunkChildList[index].toolDir = ToolDirection.Original;
             obj.GetComponent<SpriteRenderer>().sprite =
-                SpriteManager.Instance.ReturnToolSprite(chunkChildList[index].originalSpriteID);
-            GameManager.Instance.OperateUIDirection(obj, chunkChildList[index].originalSpriteDir);
+                SpriteManager.Instance.ReturnToolSprite((int)ToolEnum.Block);
 
             UpdateRelevantPos();
             UpdateCentre();
@@ -175,13 +194,13 @@ public class ChunkClass : MonoBehaviour
         rotateCount = 0;
         foreach (var item in chunkChildList)
         {
-            if (item.toolID == 0)
+            if (item.toolID == ToolEnum.Move)
             {
                 accumulatedMove += item.stickablObj.transform.right * moveSpeed;
             }
 
 
-            if (item.toolID == 1)
+            if (item.toolID == ToolEnum.Rotate)
             {
                 rotateCount++;
                 accumulatedRotDur *= 0.5f;
@@ -208,15 +227,15 @@ public class ChunkClass : MonoBehaviour
     private Vector3 flipCompareAxis = new Vector3(0, 0, 1);
     private void UpdateToolDirection(StickableClass item)
     {
-        if (item.toolID == 1)
+        if (item.toolID == ToolEnum.Rotate)
         {
             if (Vector3.Dot(item.stickablObj.transform.forward, flipCompareAxis) >= 1)
             {
-                item.toolDir = (int) ToolDirection.Original;
+                item.toolDir = ToolDirection.Original;
             }
             else
             {
-                item.toolDir = (int) ToolDirection.Flip;
+                item.toolDir = ToolDirection.Flip;
             }
         }
         else
@@ -224,7 +243,7 @@ public class ChunkClass : MonoBehaviour
             for (int i = 0; i < compareAxis.Length; i++)
             {
                 if (Vector3.Dot(item.stickablObj.transform.right, compareAxis[i]) >= 1)
-                    item.toolDir = i;
+                    item.toolDir = (ToolDirection)i;
             }
         }
     }

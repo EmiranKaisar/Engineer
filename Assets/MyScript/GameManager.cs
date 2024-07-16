@@ -216,26 +216,12 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < toolStoreList.Count; i++)
         {
-            int toolID = toolStoreList[i].toolID;
+            int toolID = (int)toolStoreList[i].toolID;
             toolItemUIList[i].SetActive(true);
             toolItemUIList[i].GetComponent<Image>().sprite = SpriteManager.Instance.ReturnToolSprite(toolID);
             //operate direction
-            OperateUIDirection(toolItemUIList[i], toolStoreList[i].toolDirection);
+            GlobalMethod.OperateUIDirection(toolItemUIList[i], (int)toolStoreList[i].toolDirection);
             AddButtonListener(i);
-        }
-    }
-
-    //original sprite should be operated due to the localRotation
-    //tool sprite should be with worldRotation
-    public void OperateUIDirection(GameObject obj, int toolDir)
-    {
-        if (toolDir <= 3)
-        {
-            obj.transform.rotation = Quaternion.AngleAxis(90 * toolDir, Vector3.forward);
-        }
-        else
-        {
-            obj.transform.rotation = Quaternion.AngleAxis(180, Vector3.up);
         }
     }
 
@@ -349,9 +335,10 @@ public class GameManager : MonoBehaviour
     
     #endregion
 
-    private void StartGame()
+    public void StartGame()
     {
         //start the game from the beginning
+        GlobalParameters.Instance.ResetLevel();
     }
 
     private void BackToGame()

@@ -4,8 +4,11 @@ using UnityEngine;
 
 public enum ToolEnum
 {
+    Block,
     Move,
     Rotate,
+    Trap,
+    Flag,
 }
 
 public enum ToolDirection

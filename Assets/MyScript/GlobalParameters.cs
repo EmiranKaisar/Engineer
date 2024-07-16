@@ -6,13 +6,21 @@ using System.IO;
 
 public class GlobalParameters : MonoBehaviour
 {
-    public int presentLevelID = 0;
+    //for now, only save the current level info
+    //the basics are stickable obj
+    //there are 3 types of tool: mover, rotater, killer
+    //there are instantiate points for players
+    //flag points, flag target points
     
     public float rotateToolDur = 2;
 
     public float moveToolSpeed = 1;
 
-    public bool editMode = false;
+    public GameObject playerObj;
+    public GameObject levelObjs;
+
+    public LevelInfo presentLevel = new LevelInfo();
+    
 
     public static GlobalParameters Instance
     {
@@ -33,43 +41,89 @@ public class GlobalParameters : MonoBehaviour
         
     }
 
+
+
     // Start is called before the first frame update
     void Start()
     {
         
+        GetInfo();
     }
+    
+    
+    //call this after this level is set up
+    private void GetInfo()
+    {
+        //get player position
+        SetFloatPosition(presentLevel.playerInstantiatePos, playerObj.transform.position);
+        
+        //get all other objs info
+        SetPropInfo(levelObjs.transform);
+    }
+
+    private void SetFloatPosition(float[] floatPos ,Vector3 vectorPos)
+    {
+        floatPos[0] = vectorPos.x;
+        floatPos[1] = vectorPos.y;
+        floatPos[2] = vectorPos.z;
+    }
+
+    private void SetPropInfo(Transform transform)
+    {
+        foreach (Transform childObj in transform)
+        {
+            if (childObj.CompareTag("Chunk"))
+            {
+                foreach (var item in childObj.GetComponent<ChunkClass>().chunkChildList)
+                {
+                    presentLevel.scenePropTools.Add(new PropTool((int)item.toolID, (int)item.toolDir, item.stickablObj.transform.position));
+                }
+                
+            }
+        }
+    }
+
+    public void ResetLevel()
+    {
+        playerObj.transform.position = ReturnVector(presentLevel.playerInstantiatePos);
+        ResetPropInfo(levelObjs.transform);
+    }
+
+    private void ResetPropInfo(Transform transform)
+    {
+        int index = 0;
+        foreach (Transform childObj in transform)
+        {
+            if (childObj.CompareTag("Chunk"))
+            {
+                foreach (var item in childObj.GetComponent<ChunkClass>().chunkChildList)
+                {
+                    item.stickablObj.transform.position = ReturnVector(presentLevel.scenePropTools[index].toolPos);
+                    item.toolID = (ToolEnum)presentLevel.scenePropTools[index].toolID;
+                    item.toolDir = (ToolDirection)presentLevel.scenePropTools[index].toolDirection;
+                    GlobalMethod.OperateUIDirection(item.stickablObj, (int)item.toolDir);
+                    
+                    index++;
+                }
+                
+                childObj.GetComponent<ChunkClass>().InitChunk();
+                
+            }
+        }
+    }
+
+    private Vector3 ReturnVector(float[] pos)
+    {
+        return new Vector3(pos[0], pos[1], pos[2]);
+    }
+    
 
     // Update is called once per frame
     void Update()
     {
-        if (editMode)
-        {
-            //present editor UI
-            
-            //1. At first, one is presented with the list of existing levels, and can create a new one. 
-            //2. In either way, when entered in a level, there are a side bar for 3 types of props: Block, tool, Start/End Point.
-            //3. When clicked one of the props, one can place the prop in the grid of the scene just like tilemap in unity
-            //4. There is a default size of the scene, however when props are located outside, the size of the scene is decided by the region surrounding all props.
-            //5. Can select a tile and delete it with a delete button
-            //6. Can save the level
-            
-            
-        }
-        else
-        {
-            //close editor UI
-            
-        }
+
     }
 
-    public void SaveLevel(int index)
-    {
-        
-    }
 
-    public void LoadLevel(int index)
-    {
-        
-    }
 
 }
