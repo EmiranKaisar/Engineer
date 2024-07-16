@@ -17,6 +17,18 @@ public enum ToolDirection
     Flip
 }
 
+public enum StateEnum
+{
+    Home,
+    ChoosePlayer,
+    ChooseLevel,
+    GamePlay,
+    GamePlayPause,
+    ChooseEditorLevel,
+    MapEditor,
+    MapEditorPause,
+}
+
 public enum LevelType
 {
     Legacy,
