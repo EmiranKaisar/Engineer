@@ -28,7 +28,6 @@ public class GameManager : MonoBehaviour
     [Serializable]
     public class StateClass
     {
-        public string StateName;
         public StateEnum ThisState;
         public StateChangeAction stateAction;
         public GameObject UIObj;
@@ -71,14 +70,9 @@ public class GameManager : MonoBehaviour
             if ((StateEnum)i != StateList[i].ThisState)
             {
                 allRight = false;
-                Debug.Log("State " + StateList[i].StateName + "is not in right position");
+                Debug.Log("State " + StateList[i].ThisState + "is not in right position");
             }
             
-        }
-
-        if (allRight)
-        {
-            Debug.Log("All states are in right position");
         }
 
     }
@@ -105,7 +99,6 @@ public class GameManager : MonoBehaviour
         switch (StateList[index].ThisState)
         {
             case StateEnum.Home:
-                Debug.Log("it is home");
                 StateList[index].stateAction += GotoHomeAction;
                 return;
             case StateEnum.ChooseLevel:
@@ -273,6 +266,7 @@ public class GameManager : MonoBehaviour
     
     private void GotoGamePlayAction()
     {
+        Time.timeScale = 1;
         switch (StateList[previousStateIndex].ThisState)
         {
             case StateEnum.GamePlayPause:
@@ -290,6 +284,7 @@ public class GameManager : MonoBehaviour
     
     private void GotoGamePlayPauseAction()
     {
+        Time.timeScale = 0;
         if (GamePlayPauseUI == null)
         {
             GamePlayPauseUI = StateList[presentStateIndex].UIObj.transform.Find("PauseUI").gameObject;

@@ -16,11 +16,11 @@ public class PlayerController : MonoBehaviour
 	[SerializeField] private Collider2D m_CrouchDisableCollider;				// A collider that will be disabled when crouching
 	[SerializeField] private Transform[] m_WallChecks;
 
-	const float k_GroundedRadius = .2f; // Radius of the overlap circle to determine if grounded
+	const float k_GroundedRadius = .1f; // Radius of the overlap circle to determine if grounded
 	private bool m_Grounded;            // Whether or not the player is grounded.
-	private const float k_WalledRadius = .2f;
+	private const float k_WalledRadius = .1f;
 	private bool m_Walled;
-	const float k_CeilingRadius = .2f; // Radius of the overlap circle to determine if the player can stand up
+	const float k_CeilingRadius = .1f; // Radius of the overlap circle to determine if the player can stand up
 	private Rigidbody2D m_Rigidbody2D;
 	private bool m_FacingRight = true;  // For determining which way the player is currently facing.
 	private Vector3 m_Velocity = Vector3.zero;
@@ -45,9 +45,18 @@ public class PlayerController : MonoBehaviour
 	private GameObject wallObj;
 	private GameObject candidateObj;
 
+	private Animator playerAnimator;
+
+	private AudioSource audioSource;
+
+	public AudioClip stickAudio;
+	public AudioClip jumpAudio;
+
 	private void Awake()
 	{
 		m_Rigidbody2D = GetComponent<Rigidbody2D>();
+		playerAnimator = GetComponent<Animator>();
+		audioSource = GetComponent<AudioSource>();
 
 		if (OnLandEvent == null)
 			OnLandEvent = new UnityEvent();
@@ -71,10 +80,6 @@ public class PlayerController : MonoBehaviour
 		if (colliders.Length > 0)
 		{
 			groundObj = colliders[colliders.Length -1].gameObject;
-			//candidateObj = colliders[colliders.Length -1].gameObject;
-			
-			
-			
 		}
 	}
 
@@ -88,8 +93,6 @@ public class PlayerController : MonoBehaviour
 			if (colliders.Length > 0)
 			{
 				wallObj = colliders[colliders.Length -1].gameObject;
-				//candidateObj = colliders[colliders.Length -1].gameObject;
-				
 			}
 		}
 		
@@ -114,12 +117,21 @@ public class PlayerController : MonoBehaviour
 				m_Walled = true;
 			}
 		}
+
+		if (candidateObj != null)
+		{
+			candidateObj.GetComponentInParent<ChunkClass>()?.CheckTrap(candidateObj, this.gameObject);
+		}
+		
+		
 	}
 	
 	public void StampCandidate()
 	{
 		if (candidateObj != null && (m_Grounded || m_Walled))
 		{
+			audioSource.clip = stickAudio;
+			audioSource.Play();
 			candidateObj.GetComponentInParent<ChunkClass>().StickTool(candidateObj);
 		}
 		   
@@ -129,6 +141,8 @@ public class PlayerController : MonoBehaviour
 	{
 		if (candidateObj != null && (m_Grounded || m_Walled))
 		{
+			audioSource.clip = stickAudio;
+			audioSource.Play();
 			candidateObj.GetComponentInParent<ChunkClass>().CollectTool(candidateObj);
 		}
 		    
@@ -183,9 +197,12 @@ public class PlayerController : MonoBehaviour
 			Vector3 targetVelocity = new Vector2(move * 10f, m_Rigidbody2D.velocity.y);
 			// And then smoothing it out and applying it to the character
 			m_Rigidbody2D.velocity = Vector3.SmoothDamp(m_Rigidbody2D.velocity, targetVelocity, ref m_Velocity, m_MovementSmoothing);
-
+			
+			Debug.Log(move);
 
 			PropAffectedMove(move);
+			
+			playerAnimator.SetFloat("HorizontalSpeed", Mathf.Abs(move));
 			
 
 			// If the input is moving the player right and the player is facing left...
@@ -206,10 +223,19 @@ public class PlayerController : MonoBehaviour
 		{
 			// Add a vertical force to the player.
 			m_Grounded = false;
+			playerAnimator.SetBool("Jump", true);
+			audioSource.clip = jumpAudio;
+			audioSource.Play();
 			m_Rigidbody2D.AddForce(jumpDirection*m_JumpForce);
 		}
+
 		
 		ApplyGravity();
+	}
+
+	public void AfterJumpAnim()
+	{
+		playerAnimator.SetBool("Jump", false);
 	}
 
 	private float friction = 16;
@@ -269,6 +295,7 @@ public class PlayerController : MonoBehaviour
 				
 		}
 	}
+	
 
 	//if walled and 
 	private void ClingWall()
@@ -288,6 +315,7 @@ public class PlayerController : MonoBehaviour
 		m_FacingRight = !m_FacingRight;
 
 		// Multiply the player's x local scale by -1.
+		this.transform.rotation *= Quaternion.AngleAxis(180, Vector3.up);
 	}
 	
 }

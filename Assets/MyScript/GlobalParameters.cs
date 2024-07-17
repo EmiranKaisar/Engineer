@@ -59,6 +59,9 @@ public class GlobalParameters : MonoBehaviour
         
         //get all other objs info
         SetPropInfo(levelObjs.transform);
+        
+        //get all tools in bag
+        SetBagToolInfo();
     }
 
     private void SetFloatPosition(float[] floatPos ,Vector3 vectorPos)
@@ -83,10 +86,19 @@ public class GlobalParameters : MonoBehaviour
         }
     }
 
+    private void SetBagToolInfo()
+    {
+        foreach (var item in BagManager.Instance.currentBagList)
+        {
+            presentLevel.bagTools.Add(new(item.toolID, item.toolDirection));
+        }
+    }
+
     public void ResetLevel()
     {
         playerObj.transform.position = ReturnVector(presentLevel.playerInstantiatePos);
         ResetPropInfo(levelObjs.transform);
+        ResetBagToolInfo();
     }
 
     private void ResetPropInfo(Transform transform)
@@ -98,6 +110,7 @@ public class GlobalParameters : MonoBehaviour
             {
                 foreach (var item in childObj.GetComponent<ChunkClass>().chunkChildList)
                 {
+                    item.stickablObj.SetActive(true);
                     item.stickablObj.transform.position = ReturnVector(presentLevel.scenePropTools[index].toolPos);
                     item.toolID = (ToolEnum)presentLevel.scenePropTools[index].toolID;
                     item.toolDir = (ToolDirection)presentLevel.scenePropTools[index].toolDirection;
@@ -110,6 +123,17 @@ public class GlobalParameters : MonoBehaviour
                 
             }
         }
+    }
+
+    private void ResetBagToolInfo()
+    {
+        BagManager.Instance.currentBagList.Clear();
+        foreach (var item in presentLevel.bagTools)
+        {
+            BagManager.Instance.currentBagList.Add(new(item.toolID, item.toolDirection));
+        }
+        
+        BagManager.Instance.UpdateAllTools();
     }
 
     private Vector3 ReturnVector(float[] pos)

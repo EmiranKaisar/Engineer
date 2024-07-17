@@ -21,7 +21,6 @@ public class ChunkClass : MonoBehaviour
     public class StickableClass
     {
         public bool sticked = false;
-        public bool cleared = false;
         public ToolEnum toolID;
         public ToolDirection toolDir;
         public GameObject stickablObj;
@@ -34,8 +33,6 @@ public class ChunkClass : MonoBehaviour
     private List<Vector3> relevantPos = new List<Vector3>();
 
     private Vector3 presentCentre;
-
-    private bool ifSticked = false;
 
     private int rotateCount = 0;
 
@@ -65,13 +62,15 @@ public class ChunkClass : MonoBehaviour
         {
             item.stickablObj.GetComponent<SpriteRenderer>().sprite =
                 SpriteManager.Instance.ReturnToolSprite((int)item.toolID);
+            
+            UpdateStickState(item);
         }
     }
+    
+    
 
     private void InitParameters()
     {
-        ifSticked = false;
-        
         moveSpeed = GlobalParameters.Instance.moveToolSpeed;
         rotateDur = GlobalParameters.Instance.rotateToolDur;
     }
@@ -81,9 +80,7 @@ public class ChunkClass : MonoBehaviour
         UpdateRelevantPos();
         UpdateCentre();
         MoveChunkToCentre();
-        UpdateIfChunkSticked();
-        if (ifSticked)
-            CalculatePresentKinematic();
+        CalculatePresentKinematic();
     }
 
     private void UpdateRelevantPos()
@@ -134,21 +131,40 @@ public class ChunkClass : MonoBehaviour
     public void StickTool(GameObject obj)
     {
         int index = ReturnIndexByObj(obj);
-        BagTool selectedTool = BagManager.Instance.PresentSelectedBagTool();
-        if (index >= 0 && !chunkChildList[index].sticked && selectedTool.toolID >= 0 && !inRotateProcedure)
-        {
-            chunkChildList[index].sticked = true;
-            chunkChildList[index].toolID = selectedTool.toolID;
-            chunkChildList[index].toolDir = selectedTool.toolDirection;
-            obj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)selectedTool.toolID);
-            //GameManager.Instance.OperateUIDirection(obj, selectedTool.toolDirection);
-            GlobalMethod.OperateUIDirection(obj, (int)selectedTool.toolDirection);
+        StickToolByIndex(index);
+    }
 
-            BagManager.Instance.DeleteSelectedTool();
-            UpdateRelevantPos();
-            UpdateCentre();
-            MoveChunkToCentre();
-            CalculatePresentKinematic();
+    private void StickToolByIndex(int index)
+    {
+        BagTool selectedTool = BagManager.Instance.PresentSelectedBagTool();
+        
+        if (index >= 0 && !inRotateProcedure)
+        {
+            if (!chunkChildList[index].sticked)
+            {
+                chunkChildList[index].sticked = true;
+                chunkChildList[index].toolID = selectedTool.toolID;
+                chunkChildList[index].toolDir = selectedTool.toolDirection;
+                chunkChildList[index].stickablObj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)selectedTool.toolID);
+
+                GlobalMethod.OperateUIDirection(chunkChildList[index].stickablObj, (int)selectedTool.toolDirection);
+
+                BagManager.Instance.DeleteSelectedTool();
+                UpdateStickState(chunkChildList[index]);
+                UpdateRelevantPos();
+                UpdateCentre();
+                MoveChunkToCentre();
+                CalculatePresentKinematic();
+            }
+            else
+            {
+                if (chunkChildList[index].toolID == ToolEnum.Destination && selectedTool.toolID == ToolEnum.Star)
+                {
+                    GameManager.Instance.StateButtonAction((int)StateEnum.GamePlayPause);
+                    Debug.Log("success !");
+                }
+            }
+            
         }
     }
 
@@ -164,22 +180,64 @@ public class ChunkClass : MonoBehaviour
             chunkChildList[index].toolDir = ToolDirection.Original;
             obj.GetComponent<SpriteRenderer>().sprite =
                 SpriteManager.Instance.ReturnToolSprite((int)ToolEnum.Block);
-
+            
+            UpdateStickState(chunkChildList[index]);
             UpdateRelevantPos();
             UpdateCentre();
             MoveChunkToCentre();
-            UpdateIfChunkSticked();
             CalculatePresentKinematic();
         }
     }
 
-    private void UpdateIfChunkSticked()
+    private void UpdateSprite(int index, ToolEnum toolID)
     {
-        ifSticked = false;
-        foreach (var item in chunkChildList)
+        chunkChildList[index].stickablObj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)toolID);
+    }
+
+    public void CheckTrap(GameObject obj, GameObject player)
+    {
+        int index = ReturnIndexByObj(obj);
+        if (index >= 0 && !inRotateProcedure)
         {
-            if (item.sticked)
-                ifSticked = true;
+            if (chunkChildList[index].toolID == ToolEnum.Trap)
+            {
+                TrapFunction(index, player);
+            }
+        }
+    }
+
+    private void TrapFunction(int index, GameObject player)
+    {
+        if (BagManager.Instance.currentBagList.Count > 0)
+        {
+            StickToolByIndex(index);
+        }
+        else
+        {
+            StickPlayer(index, player);
+        }
+    }
+
+    private IEnumerator stickPlayerAnim;
+    private void StickPlayer(int index, GameObject player)
+    {
+        //player.transform.position = chunkChildList[index].stickablObj.transform.position;
+        if(stickPlayerAnim != null)
+            StopCoroutine(stickPlayerAnim);
+        stickPlayerAnim = StickPlayerAnim(player, chunkChildList[index].stickablObj);
+        StartCoroutine(stickPlayerAnim);
+    }
+
+
+    private void UpdateStickState(StickableClass item)
+    {
+        if (item.toolID == ToolEnum.Block || item.toolID == ToolEnum.Trap)
+        {
+            item.sticked = false;
+        }
+        else
+        {
+            item.sticked = true;
         }
     }
 
@@ -213,7 +271,7 @@ public class ChunkClass : MonoBehaviour
         accumulatedMove = Vector3.zero;
         foreach (var item in chunkChildList)
         {
-            if (item.toolID == 0)
+            if (item.toolID == ToolEnum.Move)
             {
                 accumulatedMove += item.stickablObj.transform.right * moveSpeed;
                 UpdateToolDirection(item);
@@ -292,6 +350,51 @@ public class ChunkClass : MonoBehaviour
         UpdateAfterRotation();
 
         inRotateProcedure = false;
+    }
+
+    private float stickAnimDur = 0.2f;
+    private IEnumerator StickPlayerAnim(GameObject playerObj, GameObject targetObj)
+    {
+        GameObject newObj = new GameObject();
+        newObj.AddComponent<SpriteRenderer>().sprite = playerObj.GetComponent<SpriteRenderer>().sprite;
+        playerObj.SetActive(false);
+        newObj.transform.position = new Vector2(playerObj.transform.position.x, playerObj.transform.position.y);
+        Vector3 startPos = newObj.transform.position;
+        
+        
+        float timer = 0;
+        while (timer <= stickAnimDur)
+        {
+            timer += Time.deltaTime;
+            newObj.transform.position = Vector3.Lerp(startPos, targetObj.transform.position, timer/stickAnimDur);
+            yield return null;
+        }
+        
+        StickByObjAndBagTool(targetObj, new BagTool(ToolEnum.Corpse, ToolDirection.Original));
+        Destroy(newObj);
+        yield return new WaitForSeconds(0.4f);
+        GameManager.Instance.StateButtonAction((int)StateEnum.GamePlayPause);
+        Debug.Log("lose !");
+        playerObj.SetActive(true);
+    }
+
+    private void StickByObjAndBagTool(GameObject obj, BagTool bagTool)
+    {
+        int index = ReturnIndexByObj(obj);
+        if (index >= 0 && !chunkChildList[index].sticked && !inRotateProcedure)
+        {
+            chunkChildList[index].sticked = true;
+            chunkChildList[index].toolID = bagTool.toolID;
+            chunkChildList[index].toolDir = bagTool.toolDirection;
+            chunkChildList[index].stickablObj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)bagTool.toolID);
+            GlobalMethod.OperateUIDirection(chunkChildList[index].stickablObj, (int)bagTool.toolDirection);
+            UpdateStickState(chunkChildList[index]);
+            UpdateRelevantPos();
+            UpdateCentre();
+            MoveChunkToCentre();
+            CalculatePresentKinematic();
+        }
+        
     }
 
 

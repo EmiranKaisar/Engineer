@@ -8,8 +8,11 @@ public enum ToolEnum
     Move,
     Rotate,
     Trap,
-    Flag,
+    Star,
+    Destination,
+    Corpse,
 }
+
 
 public enum ToolDirection
 {

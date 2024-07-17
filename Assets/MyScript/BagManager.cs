@@ -32,6 +32,7 @@ public class BagManager : MonoBehaviour
     private void InitBag()
     {
         GetBagItemUIList();
+        UpdateAllTools();
     }
 
     private void GetBagItemUIList()
@@ -44,14 +45,21 @@ public class BagManager : MonoBehaviour
         }
     }
 
+    public void UpdateAllTools()
+    {
+        for (int i = 0; i < currentBagList.Count; i++)
+        {
+            BagItemUIList[i].SetActive(true);
+            UpdateSprite(currentBagList[i], i);
+        }
+    }
+
     public void AddTool(BagTool tool)
     {
         if (currentBagList.Count < presentBagCapacity)
         {
             BagItemUIList[currentBagList.Count].SetActive(true);
-            BagItemUIList[currentBagList.Count].GetComponent<Image>().sprite =
-                SpriteManager.Instance.ReturnToolSprite((int)tool.toolID);
-            GlobalMethod.OperateUIDirection(BagItemUIList[currentBagList.Count].gameObject, (int)tool.toolDirection);
+            UpdateSprite(tool, currentBagList.Count);
             currentBagList.Add(tool);
         }
            
@@ -67,11 +75,16 @@ public class BagManager : MonoBehaviour
 
             for (int i = 0; i < currentBagList.Count; i++)
             {
-                BagItemUIList[i].GetComponent<Image>().sprite =
-                    SpriteManager.Instance.ReturnToolSprite((int)currentBagList[i].toolID);
-                GlobalMethod.OperateUIDirection(BagItemUIList[currentBagList.Count].gameObject, (int)currentBagList[i].toolDirection);
+                UpdateSprite(currentBagList[i], i);
             }
         }
+    }
+
+    private void UpdateSprite(BagTool tool, int index)
+    {
+        BagItemUIList[index].GetComponent<Image>().sprite =
+            SpriteManager.Instance.ReturnToolSprite((int)tool.toolID);
+        GlobalMethod.OperateUIDirection(BagItemUIList[index].gameObject, (int)tool.toolDirection);
     }
 
 

@@ -32,5 +32,6 @@ public class LevelInfo
     public int levelID;
     public float[] playerInstantiatePos = new float[3];
     public List<PropTool> scenePropTools = new List<PropTool>();
+    public List<BagTool> bagTools = new List<BagTool>();
     public int levelType;
 }
