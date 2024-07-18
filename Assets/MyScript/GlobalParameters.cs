@@ -16,6 +16,9 @@ public class GlobalParameters : MonoBehaviour
 
     public float moveToolSpeed = 1;
 
+    public float verticalBound = 7.5f;
+    public float horizontalBound = 13.72f;
+
     public GameObject playerObj;
     public GameObject levelObjs;
 

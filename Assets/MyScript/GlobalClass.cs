@@ -35,3 +35,16 @@ public class LevelInfo
     public List<BagTool> bagTools = new List<BagTool>();
     public int levelType;
 }
+
+public struct LevelResult
+{
+    public LevelResult(int index, bool success, float dur)
+    {
+        playerIndex = index;
+        playerSuccess = success;
+        timeDur = dur;
+    }
+    public int playerIndex;
+    public bool playerSuccess;
+    public float timeDur;
+}

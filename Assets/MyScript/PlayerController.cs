@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
+using SpriteRenderer = UnityEngine.SpriteRenderer;
 
 public class PlayerController : MonoBehaviour
 {
@@ -26,6 +27,11 @@ public class PlayerController : MonoBehaviour
 	private Vector3 m_Velocity = Vector3.zero;
 
 	public float gravity = 20;
+	
+	[HideInInspector]
+	public string playerName;
+
+	[HideInInspector] public int playerIndex = 0;
 
 	private float jumpRadiance = Mathf.PI/3;
 
@@ -44,6 +50,7 @@ public class PlayerController : MonoBehaviour
 	private GameObject groundObj;
 	private GameObject wallObj;
 	private GameObject candidateObj;
+	private GameObject previousCandidateObj;
 
 	private Animator playerAnimator;
 
@@ -51,6 +58,8 @@ public class PlayerController : MonoBehaviour
 
 	public AudioClip stickAudio;
 	public AudioClip jumpAudio;
+	public AudioClip successAudio;
+	
 
 	private void Awake()
 	{
@@ -121,6 +130,18 @@ public class PlayerController : MonoBehaviour
 		if (candidateObj != null)
 		{
 			candidateObj.GetComponentInParent<ChunkClass>()?.CheckTrap(candidateObj, this.gameObject);
+			if (candidateObj != previousCandidateObj)
+			{
+				candidateObj.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, .9f);
+				if(previousCandidateObj != null)
+				    previousCandidateObj.GetComponent<SpriteRenderer>().color = Color.white;
+				previousCandidateObj = candidateObj;
+			}
+		}
+		else
+		{
+			if(previousCandidateObj != null)
+				previousCandidateObj.GetComponent<SpriteRenderer>().color = Color.white;
 		}
 		
 		
@@ -132,7 +153,13 @@ public class PlayerController : MonoBehaviour
 		{
 			audioSource.clip = stickAudio;
 			audioSource.Play();
-			candidateObj.GetComponentInParent<ChunkClass>().StickTool(candidateObj);
+			if (candidateObj.GetComponentInParent<ChunkClass>().StickTool(candidateObj))
+			{
+				GameManager.Instance.SetResult(playerIndex, true);
+				audioSource.clip = successAudio;
+				audioSource.Play();
+			}
+				
 		}
 		   
 	}
@@ -197,8 +224,6 @@ public class PlayerController : MonoBehaviour
 			Vector3 targetVelocity = new Vector2(move * 10f, m_Rigidbody2D.velocity.y);
 			// And then smoothing it out and applying it to the character
 			m_Rigidbody2D.velocity = Vector3.SmoothDamp(m_Rigidbody2D.velocity, targetVelocity, ref m_Velocity, m_MovementSmoothing);
-			
-			Debug.Log(move);
 
 			PropAffectedMove(move);
 			
@@ -229,7 +254,7 @@ public class PlayerController : MonoBehaviour
 			m_Rigidbody2D.AddForce(jumpDirection*m_JumpForce);
 		}
 
-		
+		ApplyBound();
 		ApplyGravity();
 	}
 
@@ -268,10 +293,7 @@ public class PlayerController : MonoBehaviour
 
 						jumpDirection = new Vector2(Mathf.Cos(Mathf.PI - jumpRadiance), Mathf.Sin(Mathf.PI - jumpRadiance));
 					}
-					
-					
-					
-						
+
 				}
 				else
 				{
@@ -295,7 +317,31 @@ public class PlayerController : MonoBehaviour
 				
 		}
 	}
-	
+
+
+	public void PlayerDie()
+	{
+		//disable some components
+		this.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)ToolEnum.Corpse);
+		playerAnimator.enabled = false;
+		m_Rigidbody2D.Sleep();
+		this.GetComponent<BoxCollider2D>().enabled = false;
+		this.GetComponent<PlayerAction>().enabled = false;
+		if(dieProcedure != null)
+			StopCoroutine(dieProcedure);
+		dieProcedure = DieProcedure();
+		StartCoroutine(dieProcedure);
+	}
+
+	public void PlayerAlive()
+	{
+		//enable those components
+		this.gameObject.SetActive(true);
+		playerAnimator.enabled = true;
+		m_Rigidbody2D.WakeUp();
+		this.GetComponent<BoxCollider2D>().enabled = true;
+		this.GetComponent<PlayerAction>().enabled = true;
+	}
 
 	//if walled and 
 	private void ClingWall()
@@ -303,6 +349,45 @@ public class PlayerController : MonoBehaviour
 		
 	}
 
+	private void ApplyBound()
+	{
+		if (this.transform.position.x >= GlobalParameters.Instance.horizontalBound && m_Rigidbody2D.velocity.x >= 0)
+		{
+			m_Rigidbody2D.velocity = new Vector2(0, m_Rigidbody2D.velocity.y);
+			this.transform.position = new Vector2(GlobalParameters.Instance.horizontalBound,this.transform.position.y);
+		}
+
+
+		if (this.transform.position.x <= -GlobalParameters.Instance.horizontalBound && m_Rigidbody2D.velocity.x <= 0)
+		{
+			m_Rigidbody2D.velocity = new Vector2(0, m_Rigidbody2D.velocity.y);
+			this.transform.position = new Vector2(-GlobalParameters.Instance.horizontalBound,this.transform.position.y);
+		}
+
+
+		if (this.transform.position.y >= GlobalParameters.Instance.verticalBound && m_Rigidbody2D.velocity.y >= 0)
+		{
+			m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, 0);
+			this.transform.position = new Vector2(this.transform.position.x,GlobalParameters.Instance.verticalBound);
+		}
+
+
+		if (this.transform.position.y <= -GlobalParameters.Instance.verticalBound && m_Rigidbody2D.velocity.y <= 0)
+		{
+			m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x,0);
+			this.transform.position = new Vector2(this.transform.position.x,-GlobalParameters.Instance.verticalBound);
+			PlayerDie();
+		}
+	}
+
+	private WaitForSeconds dieDur = new WaitForSeconds(0.4f);
+	private IEnumerator dieProcedure;
+	private IEnumerator DieProcedure()
+	{
+		yield return dieDur;
+		GameManager.Instance.SetResult(playerIndex, false);
+	}
+	
 	private void ApplyGravity()
 	{
 		m_Rigidbody2D.AddForce(new Vector2(0f, -gravity));

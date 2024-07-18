@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.Mathematics;
 
 public class GameManager : MonoBehaviour
 {
@@ -19,10 +20,21 @@ public class GameManager : MonoBehaviour
 
     public GameObject toolStoreUI;
 
+    public GameObject starGlowPrefab;
+
     public GameObject resultUI;
 
-    private List<GameObject> toolItemUIList = new List<GameObject>();
+    public float levelTime;
+
+    public LevelResult presentLevelResult;
     
+    
+
+    private bool gotResult = false;
+
+    private List<GameObject> toolItemUIList = new List<GameObject>();
+
+    public List<GameObject> playerList = new List<GameObject>();
     public delegate void StateChangeAction();
 
     [Serializable]
@@ -43,6 +55,10 @@ public class GameManager : MonoBehaviour
     private GameObject EditorPauseUI;
     private GameObject GameButtonsObj;
     private GameObject EditorButtonsObj;
+    
+    private TMP_Text gamePlayPauseTitle;
+    private TMP_Text gamePlayPausePlayerName;
+    private TMP_Text gamePlayPauseTime;
 
     public static GameManager Instance { get; private set; }
 
@@ -86,7 +102,8 @@ public class GameManager : MonoBehaviour
                 EditorButtonsObj = StateList[index].UIObj.transform.Find("EditorButtons").gameObject;
                 return;
             case StateEnum.GamePlayPause:
-                GamePlayPauseUI = StateList[index].UIObj.transform.Find("PauseUI").gameObject;
+                AssignGamePlayPauseUI(index);
+                //GamePlayPauseUI = StateList[index].UIObj.transform.Find("PauseUI").gameObject;
                 return;
             case StateEnum.MapEditorPause:
                 EditorPauseUI = StateList[index].UIObj.transform.Find("PauseUI").gameObject;
@@ -125,6 +142,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void AssignGamePlayPauseUI(int index)
+    {
+        GamePlayPauseUI = StateList[index].UIObj.transform.Find("PauseUI").gameObject;
+        gamePlayPauseTitle = GamePlayPauseUI.transform.Find("Title").GetComponent<TMP_Text>();
+        gamePlayPausePlayerName = GamePlayPauseUI.transform.Find("PlayerName").GetComponent<TMP_Text>();
+        gamePlayPauseTime = GamePlayPauseUI.transform.Find("Time").GetComponent<TMP_Text>();
+    }
+
     private void Start()
     {
         playerObj.transform.position = playerInitPos;
@@ -132,16 +157,8 @@ public class GameManager : MonoBehaviour
 
     private void InitGame()
     {
+        
         InitUI();
-
-        // menuObj.SetActive(true);
-        // resultUI.SetActive(false);
-        //
-        // //get tool item UI obj
-        // GetToolItemUIObjList();
-        // //update appearance, bond action to it.
-        // UpdateToolStoreItemUI();
-        //pause the game
     }
 
     private void InitUI()
@@ -196,40 +213,6 @@ public class GameManager : MonoBehaviour
         StateList[_index].UIObj.SetActive(true);
     }
 
-    private void GetToolItemUIObjList()
-    {
-        for (int i = 0; i < toolStoreUI.transform.childCount; i++)
-        {
-            toolItemUIList.Add(toolStoreUI.transform.GetChild(i).gameObject);
-            toolItemUIList[i].SetActive(false);
-        }
-    }
-
-    private void UpdateToolStoreItemUI()
-    {
-        for (int i = 0; i < toolStoreList.Count; i++)
-        {
-            int toolID = (int)toolStoreList[i].toolID;
-            toolItemUIList[i].SetActive(true);
-            toolItemUIList[i].GetComponent<Image>().sprite = SpriteManager.Instance.ReturnToolSprite(toolID);
-            //operate direction
-            GlobalMethod.OperateUIDirection(toolItemUIList[i], (int)toolStoreList[i].toolDirection);
-            AddButtonListener(i);
-        }
-    }
-
-    private void AddButtonListener(int index)
-    {
-        toolItemUIList[index].GetComponent<Button>().onClick.AddListener(() => PickUIObjButtonAction(index));
-    }
-
-    void PickUIObjButtonAction(int index)
-    {
-        //add to bag
-
-        BagManager.Instance.AddTool(new BagTool(toolStoreList[index].toolID, toolStoreList[index].toolDirection));
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -267,6 +250,8 @@ public class GameManager : MonoBehaviour
     private void GotoGamePlayAction()
     {
         Time.timeScale = 1;
+        if(starGlowObj != null)
+            starGlowObj.SetActive(false);
         switch (StateList[previousStateIndex].ThisState)
         {
             case StateEnum.GamePlayPause:
@@ -280,17 +265,37 @@ public class GameManager : MonoBehaviour
                 return;
         }
     }
-    
-    
+
+
     private void GotoGamePlayPauseAction()
     {
         Time.timeScale = 0;
-        if (GamePlayPauseUI == null)
+        
+        GamePlayPauseUI.SetActive(true);
+
+        if (gotResult)
         {
-            GamePlayPauseUI = StateList[presentStateIndex].UIObj.transform.Find("PauseUI").gameObject;
+            if (presentLevelResult.playerSuccess)
+            {
+                gamePlayPauseTitle.text = "Success !";
+            }
+            else
+            {
+                gamePlayPauseTitle.text = "Fail !";
+            }
+
+            gamePlayPausePlayerName.text = playerList[presentLevelResult.playerIndex].name;
+
+            gamePlayPauseTime.text = levelTime.ToString();
+        }
+        else
+        {
+            gamePlayPauseTitle.text = "";
+            gamePlayPausePlayerName.text = "";
+            gamePlayPauseTime.text = "";
         }
 
-        GamePlayPauseUI.SetActive(true);
+
     }
 
     private void GotoChooseEditorLevelAction()
@@ -317,7 +322,6 @@ public class GameManager : MonoBehaviour
 
     private void GotoMapEditorPauseAction()
     {
-        Debug.Log("GotoMapEditorPauseAction");
         if (EditorPauseUI == null)
         {
             EditorPauseUI = StateList[presentStateIndex].UIObj.transform.Find("PauseUI").gameObject;
@@ -333,7 +337,17 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         //start the game from the beginning
+        gotResult = false;
         GlobalParameters.Instance.ResetLevel();
+        StartPlayerComponents();
+    }
+
+    private void StartPlayerComponents()
+    {
+        foreach (var obj in playerList)
+        {
+            obj.GetComponent<PlayerController>().PlayerAlive();
+        }
     }
 
     private void BackToGame()
@@ -383,12 +397,56 @@ public class GameManager : MonoBehaviour
     }
 
 
+    public void PlayStarGlowAnimation(Vector3 targetPos)
+    {
+        if(starAnimation != null)
+            StopCoroutine(starAnimation);
+        starAnimation = StarAnimation(targetPos);
+        StartCoroutine(starAnimation);
+    }
+    
+    
+    public void SetResult(int playerIndex, bool success)
+    {
+        presentLevelResult = new LevelResult(playerIndex, success, levelTime);
+
+        gotResult = true;
+        //save the result as local data
+        if (!success)
+        {
+            StateButtonAction((int)StateEnum.GamePlayPause);
+        }
+        
+    }
+    
+
+
     public void ShowResult(string result)
     {
         menuObj.SetActive(true);
         resultUI.SetActive(true);
         resultUI.GetComponentInChildren<TMP_Text>().text = result;
     }
+
+    #region Animation
+
+    //private float starAnimDur = .4f;
+    private WaitForSeconds starAnimDur = new WaitForSeconds(0.4f);
+    private GameObject starGlowObj;
+    private IEnumerator starAnimation;
+    private IEnumerator StarAnimation(Vector2 targetPos)
+    {
+        if (starGlowObj == null)
+        {
+            starGlowObj = Instantiate(starGlowPrefab, targetPos, quaternion.identity);
+        }
+        starGlowObj.SetActive(true);
+        yield return starAnimDur;
+        StateButtonAction((int)StateEnum.GamePlayPause);
+        
+    }
+
+    #endregion
 
 
 }

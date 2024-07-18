@@ -98,4 +98,16 @@ public class BagManager : MonoBehaviour
         }
     }
 
+    public bool IsFull()
+    {
+        if (presentBagCapacity > currentBagList.Count)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
 }

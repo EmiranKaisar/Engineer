@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Stickable
   - Chunk
+  - Wall
   layers:
   - Default
   - TransparentFX
