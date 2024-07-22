@@ -35,6 +35,15 @@ public enum StateEnum
     MapEditorPause,
 }
 
+public enum DetectorEnum
+{
+    Bottom,
+    Right,
+    Upper,
+    Left,
+}
+
+
 public enum LevelType
 {
     Legacy,

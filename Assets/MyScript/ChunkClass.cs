@@ -316,7 +316,7 @@ public class ChunkClass : MonoBehaviour
         }
     }
 
-    private bool inRotateProcedure = false;
+    public bool inRotateProcedure = false;
     private float rotateTimer = 0;
     private void FixedUpdate()
     {
@@ -330,7 +330,10 @@ public class ChunkClass : MonoBehaviour
             {
                 rotateTimer = 0;
                 if (rotateProcedure != null)
+                {
                     StopCoroutine(rotateProcedure);
+                    chunkTransform.rotation *= Quaternion.identity;
+                }
                 rotateProcedure = RotateProcedure(accumulatedRotDur * 0.8f);
                 StartCoroutine(rotateProcedure);
             }
