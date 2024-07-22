@@ -36,6 +36,8 @@ public class ChunkClass : MonoBehaviour
 
     private int rotateCount = 0;
 
+    public List<GameObject> enteredPlayerList = new List<GameObject>();
+
     // Start is called before the first frame update
     void Start()
     {
@@ -316,7 +318,7 @@ public class ChunkClass : MonoBehaviour
         }
     }
 
-    private bool inRotateProcedure = false;
+    public bool inRotateProcedure = false;
     private float rotateTimer = 0;
     private void FixedUpdate()
     {

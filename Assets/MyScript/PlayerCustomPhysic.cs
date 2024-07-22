@@ -16,7 +16,7 @@ public class PlayerCustomPhysic : MonoBehaviour
     {
         public CollideDetector collideDetector;
         public bool collided;
-        // [HideInInspector]
+        [HideInInspector]
         public Vector2[] area;
 
         public GameObject collidedObj;
@@ -101,8 +101,11 @@ public class PlayerCustomPhysic : MonoBehaviour
 
     #endregion
     // Start is called before the first frame update
-    
 
+
+    public bool gravityOn = true;
+
+    public bool collideOn = true;
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -111,14 +114,16 @@ public class PlayerCustomPhysic : MonoBehaviour
             DetectStickable();
             SetState();
             ApplyAcceleration();
-            if(!bottomCollided)
+            if(!bottomCollided && gravityOn)
                 ApplyGravity();
-            ApplyCollide();
+            if(collideOn)
+                ApplyCollide();
             ApplyVelocity();
             
         }
 
     }
+    
 
     private void DetectStickable()
     {
@@ -172,7 +177,6 @@ public class PlayerCustomPhysic : MonoBehaviour
     private void SetState()
     {
         bottomCollided = detectorArr[(int)CollideDetector.Bottom].collided;
-        
         upperCollided = detectorArr[(int)CollideDetector.Upper].collided;
         rightCollided = detectorArr[(int)CollideDetector.Right].collided;
         leftCollided = detectorArr[(int)CollideDetector.Left].collided;

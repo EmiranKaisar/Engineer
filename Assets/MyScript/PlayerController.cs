@@ -98,6 +98,10 @@ public class PlayerController : MonoBehaviour
 		{
 			candidateObj = customPhysic.detectorArr[(int)CollideDetector.Bottom].collidedObj;
 		}
+		else
+		{
+			candidateObj = null;
+		}
 
 		if (m_Grounded)
 		{
@@ -219,6 +223,8 @@ public class PlayerController : MonoBehaviour
 
 	private float friction = 16;
 	private Vector2 jumpDirection;
+	private bool newRot = true;
+	private Vector3 rotOffset = Vector3.zero;
 	private void PropAffectedMove(float horizontalInput)
 	{
 		jumpDirection = new Vector2(0, 1);
@@ -266,8 +272,33 @@ public class PlayerController : MonoBehaviour
 				
 				customPhysic.AddAcc(frictionForce);
 			}
-		
 		}
+
+
+		if (candidateObj != null)
+		{
+			if (candidateObj.GetComponentInParent<ChunkClass>().inRotateProcedure)
+			{
+				if (newRot)
+				{
+					rotOffset = candidateObj.transform.parent.InverseTransformPoint(transform.position + new Vector3(0.5f, -0.5f, 0) - candidateObj.transform.parent.position);
+					newRot = false;
+				}
+
+				//transform.rotation = candidateObj.transform.parent.rotation;
+				
+				transform.position = candidateObj.transform.parent.position + candidateObj.transform.parent.TransformPoint(rotOffset) + new Vector3(0.5f, -0.5f, 0);
+			}
+			else
+			{
+				newRot = true;
+			}
+		}
+		else
+		{
+			newRot = true;
+		}
+		
 	}
 
 
@@ -292,12 +323,7 @@ public class PlayerController : MonoBehaviour
 		customPhysic.WakeUp();
 		this.GetComponent<PlayerAction>().enabled = true;
 	}
-
-	//if walled and 
-	private void ClingWall()
-	{
-		
-	}
+	
 
 	private void ApplyBound()
 	{
