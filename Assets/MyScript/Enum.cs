@@ -35,13 +35,14 @@ public enum StateEnum
     MapEditorPause,
 }
 
-public enum CollideDetector
+public enum DetectorEnum
 {
-    Upper,
-    Right,
     Bottom,
+    Right,
+    Upper,
     Left,
 }
+
 
 public enum LevelType
 {

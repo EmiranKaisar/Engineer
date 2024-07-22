@@ -332,7 +332,10 @@ public class ChunkClass : MonoBehaviour
             {
                 rotateTimer = 0;
                 if (rotateProcedure != null)
+                {
                     StopCoroutine(rotateProcedure);
+                    chunkTransform.rotation *= Quaternion.identity;
+                }
                 rotateProcedure = RotateProcedure(accumulatedRotDur * 0.8f);
                 StartCoroutine(rotateProcedure);
             }
