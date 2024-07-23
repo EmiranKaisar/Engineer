@@ -20,6 +20,12 @@ public class ChunkClass : MonoBehaviour
     [Serializable]
     public class StickableClass
     {
+        public StickableClass(int id, int dir, GameObject obj)
+        {
+            toolID = (ToolEnum)id;
+            toolDir = (ToolDirection)dir;
+            stickablObj = obj;
+        }
         public bool sticked = false;
         public ToolEnum toolID;
         public ToolDirection toolDir;

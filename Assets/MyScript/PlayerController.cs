@@ -56,10 +56,6 @@ public class PlayerController : MonoBehaviour
 
     public BoolEvent OnCrouchEvent;
 
-    private bool m_wasCrouching = false;
-
-    private GameObject groundObj;
-    private GameObject wallObj;
     private GameObject candidateObj;
     private GameObject previousCandidateObj;
 
@@ -93,8 +89,6 @@ public class PlayerController : MonoBehaviour
     {
         CheckCollision();
         UpdateState();
-        //CheckWall();
-        //AssignCandidate();
     }
 
     private void CheckCollision()
@@ -299,49 +293,6 @@ public class PlayerController : MonoBehaviour
             jumpDirection = new Vector2(Mathf.Cos(jumpRadiance),
                 Mathf.Sin(jumpRadiance))*1.3f;
         }
-
-        // if (m_Walled)
-        // {
-        //     
-        //     if (candidateObj != null && candidateObj.CompareTag("Stickable"))
-        //     {
-        //         if (candidateObj.transform.position.x > this.transform.position.x)
-        //         {
-        //             if (horizontalInput > 0)
-        //             {
-        //                 m_Rigidbody2D.velocity = new Vector2(0, m_Rigidbody2D.velocity.y);
-        //                 this.transform.position +=
-        //                     new Vector3(
-        //                         candidateObj.GetComponentInParent<ChunkClass>().accumulatedMove.x * Time.fixedDeltaTime,
-        //                         0, 0);
-        //                 if (m_Rigidbody2D.velocity.y <= 0)
-        //                 {
-        //                     m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, -2);
-        //                 }
-        //
-        //                 jumpDirection = new Vector2(Mathf.Cos(Mathf.PI - jumpRadiance),
-        //                     Mathf.Sin(Mathf.PI - jumpRadiance));
-        //             }
-        //         }
-        //         else
-        //         {
-        //             if (horizontalInput < 0)
-        //             {
-        //                 m_Rigidbody2D.velocity = new Vector2(0, m_Rigidbody2D.velocity.y);
-        //                 this.transform.position +=
-        //                     new Vector3(
-        //                         candidateObj.GetComponentInParent<ChunkClass>().accumulatedMove.x * Time.fixedDeltaTime,
-        //                         0, 0);
-        //                 if (m_Rigidbody2D.velocity.y <= 0)
-        //                 {
-        //                     m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, -2);
-        //                 }
-        //
-        //                 jumpDirection = new Vector2(Mathf.Cos(jumpRadiance), Mathf.Sin(jumpRadiance));
-        //             }
-        //         }
-        //     }
-        // }
     }
 
 
@@ -369,10 +320,6 @@ public class PlayerController : MonoBehaviour
         this.GetComponent<PlayerAction>().enabled = true;
     }
 
-    //if walled and 
-    private void ClingWall()
-    {
-    }
 
     private void ApplyBound()
     {

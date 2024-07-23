@@ -19,11 +19,147 @@ public class GlobalParameters : MonoBehaviour
     public float verticalBound = 7.5f;
     public float horizontalBound = 13.72f;
 
-    public GameObject playerObj;
+    public GameObject playerObjs;
     public GameObject levelObjs;
-
+    
+    [HideInInspector]
     public LevelInfo presentLevel = new LevelInfo();
     
+    
+    public class ChunkObjPool
+    {
+        private int pointer = 0;
+        private List<GameObject> chunkObjPool = new List<GameObject>();
+        private GameObject levelObjs;
+        
+        public void InitChunkPool(int initCount, GameObject parentObj)
+        {
+            levelObjs = parentObj;
+            pointer = 0;
+            for (int i = 0; i < initCount; i++)
+            {
+                chunkObjPool.Add(NewChunk(i));
+                chunkObjPool[i].SetActive(false);
+            }
+        }
+
+
+        public void PushAll()
+        {
+            for (int i = pointer; i >= 0; i--)
+            {
+                Push();
+            }
+        }
+
+        public void Push()
+        {
+            chunkObjPool[pointer].SetActive(false);
+            pointer--;
+        }
+
+        public GameObject Pop()
+        {
+            if (pointer >= chunkObjPool.Count)
+            {
+                //create new chunk
+                chunkObjPool.Add(NewChunk(pointer));
+                return Pop();
+            }
+            else
+            {
+                int popIndex = pointer;
+                chunkObjPool[popIndex].SetActive(true);
+                pointer--;
+                return chunkObjPool[popIndex];
+            }
+        }
+
+        private GameObject NewChunk(int index)
+        {
+            GameObject newChunk = new GameObject("Chunk "+ index);
+            newChunk.tag = "Chunk";
+            newChunk.layer = LayerMask.NameToLayer("StickableObj");
+            newChunk.AddComponent<ChunkClass>();
+            newChunk.transform.SetParent(levelObjs.transform);
+            return newChunk;
+        }
+        
+        
+
+        public int Count()
+        {
+            return chunkObjPool.Count;
+        }
+    }
+    
+    public class StickableObjPool
+    {
+        private int pointer = 0;
+        private List<GameObject> stickableObjPool = new List<GameObject>();
+        private GameObject levelObjs;
+        public void InitStickablePool(int initCount, GameObject parentObj)
+        {
+            levelObjs = parentObj;
+            pointer = 0;
+            for (int i = 0; i < initCount; i++)
+            {
+                stickableObjPool.Add(NewStickable(i));
+                stickableObjPool[i].SetActive(false);
+            }
+        }
+        
+        public void PushAll()
+        {
+            for (int i = pointer; i >= 0; i--)
+            {
+                Push();
+            }
+        }
+
+        public void Push()
+        {
+            stickableObjPool[pointer].SetActive(false);
+            pointer--;
+        }
+
+        public GameObject Pop()
+        {
+            if (pointer >= stickableObjPool.Count)
+            {
+                //create new chunk
+                stickableObjPool.Add(NewStickable(pointer));
+                return Pop();
+            }
+            else
+            {
+                int popIndex = pointer;
+                stickableObjPool[popIndex].SetActive(true);
+                pointer++;
+                return stickableObjPool[popIndex];
+            }
+        }
+
+        private GameObject NewStickable(int index)
+        {
+            GameObject newStickable = new GameObject("Stickable "+ index);
+            newStickable.tag = "Stickable";
+            newStickable.layer = LayerMask.NameToLayer("StickableObj");
+            newStickable.AddComponent<BoxCollider2D>();
+            newStickable.GetComponent<BoxCollider2D>().size = new Vector2(0.9f, 0.9f);
+            newStickable.GetComponent<BoxCollider2D>().edgeRadius = 0.05f;
+            newStickable.transform.SetParent(levelObjs.transform);
+            return newStickable;
+        }
+
+        public int Count()
+        {
+            return stickableObjPool.Count;
+        }
+    }
+    
+    ChunkObjPool chunkObjPool = new ChunkObjPool();
+    StickableObjPool stickableObjPool = new StickableObjPool();
 
     public static GlobalParameters Instance
     {
@@ -41,32 +177,134 @@ public class GlobalParameters : MonoBehaviour
 
         Instance = this;
         
-        
+        chunkObjPool.InitChunkPool(10, levelObjs);
+        stickableObjPool.InitStickablePool(20, levelObjs);
+
     }
+    
 
 
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        //from scene to data
         GetInfo();
     }
+
+
+    #region Get scene info into presentLevel
     
-    
-    //call this after this level is set up
-    private void GetInfo()
+    public void GetInfo()
     {
-        //get player position
-        SetFloatPosition(presentLevel.playerInstantiatePos, playerObj.transform.position);
+        //get player spawn list
+        GetPlayerSpawnPosList();
         
         //get all other objs info
-        SetPropInfo(levelObjs.transform);
+        GetPropInfo();
         
         //get all tools in bag
+        GetBagToolInfo();
+    }
+
+    private void GetPlayerSpawnPosList()
+    {
+        presentLevel.playerSpawnList.Clear();
+        for (int i = 0; i < playerObjs.transform.childCount; i++)
+        {
+            presentLevel.playerSpawnList.Add(new PlayerSpawn(playerObjs.transform.GetChild(i).position));
+        }
+    }
+
+    
+    private void GetPropInfo()
+    {
+        presentLevel.sceneChunkList.Clear();
+
+        for (int i = 0; i < levelObjs.transform.childCount; i++)
+        {
+            if (levelObjs.transform.GetChild(i).CompareTag("Chunk") && levelObjs.transform.GetChild(i).gameObject.activeSelf)
+            {
+                presentLevel.sceneChunkList.Add(new Chunk());
+                foreach (var item in levelObjs.transform.GetChild(i).GetComponent<ChunkClass>().chunkChildList)
+                {
+                    presentLevel.sceneChunkList[i].chunkPropList.Add(new PropTool((int)item.toolID, (int)item.toolDir, item.stickablObj.transform.position));
+                }
+            }
+        }
+    }
+
+    private void GetBagToolInfo()
+    {
+        foreach (var item in BagManager.Instance.currentBagList)
+        {
+            presentLevel.bagToolList.Add(new(item.toolID, item.toolDirection));
+        }
+    }
+    
+
+    #endregion
+
+
+
+    #region Get presentLevel into scene
+    //call this after this level is set up
+    public void ResetLevel()
+    {
+        SetPlayerSpawnPosList();
+        SetPropInfo();
         SetBagToolInfo();
     }
 
+    private void SetPlayerSpawnPosList()
+    {
+        int index = 0;
+
+        foreach (var playerObj in GameManager.Instance.playerList)
+        {
+            playerObj.transform.position = ReturnVector(presentLevel.playerSpawnList[index].spawnPos);
+            index++;
+        }
+    }
+
+    private void SetPropInfo()
+    {
+        chunkObjPool.PushAll();
+        stickableObjPool.PushAll();
+        foreach (var chunkStruct in presentLevel.sceneChunkList)
+        {
+            GameObject chunk = chunkObjPool.Pop();
+            ChunkClass chunkClass = chunk.GetComponent<ChunkClass>();
+            chunkClass.chunkChildList.Clear();
+            chunk.transform.rotation = Quaternion.identity;
+            foreach (var toolStruct in chunkStruct.chunkPropList)
+            {
+                GameObject toolObj = stickableObjPool.Pop();
+                toolObj.transform.position = ReturnVector(toolStruct.toolPos);
+                chunkClass.chunkChildList.Add(new ChunkClass.StickableClass(toolStruct.toolID, toolStruct.toolDirection, toolObj));
+                GlobalMethod.OperateUIDirection(toolObj, toolStruct.toolDirection);
+            }
+        }
+    }
+
+    private void SetBagToolInfo()
+    {
+        BagManager.Instance.currentBagList.Clear();
+        foreach (var item in presentLevel.bagToolList)
+        {
+            BagManager.Instance.currentBagList.Add(new(item.toolID, item.toolDirection));
+        }
+        
+        BagManager.Instance.UpdateAllTools();
+    }
+    
+
+    #endregion
+
+
+
+    #region Helper
+    
     private void SetFloatPosition(float[] floatPos ,Vector3 vectorPos)
     {
         floatPos[0] = vectorPos.x;
@@ -74,82 +312,16 @@ public class GlobalParameters : MonoBehaviour
         floatPos[2] = vectorPos.z;
     }
 
-    private void SetPropInfo(Transform transform)
-    {
-        foreach (Transform childObj in transform)
-        {
-            if (childObj.CompareTag("Chunk"))
-            {
-                foreach (var item in childObj.GetComponent<ChunkClass>().chunkChildList)
-                {
-                    presentLevel.scenePropTools.Add(new PropTool((int)item.toolID, (int)item.toolDir, item.stickablObj.transform.position));
-                }
-                
-            }
-        }
-    }
-
-    private void SetBagToolInfo()
-    {
-        foreach (var item in BagManager.Instance.currentBagList)
-        {
-            presentLevel.bagTools.Add(new(item.toolID, item.toolDirection));
-        }
-    }
-
-    public void ResetLevel()
-    {
-        playerObj.transform.position = ReturnVector(presentLevel.playerInstantiatePos);
-        ResetPropInfo(levelObjs.transform);
-        ResetBagToolInfo();
-    }
-
-    private void ResetPropInfo(Transform transform)
-    {
-        int index = 0;
-        foreach (Transform childObj in transform)
-        {
-            if (childObj.CompareTag("Chunk"))
-            {
-                foreach (var item in childObj.GetComponent<ChunkClass>().chunkChildList)
-                {
-                    item.stickablObj.SetActive(true);
-                    item.stickablObj.transform.position = ReturnVector(presentLevel.scenePropTools[index].toolPos);
-                    item.toolID = (ToolEnum)presentLevel.scenePropTools[index].toolID;
-                    item.toolDir = (ToolDirection)presentLevel.scenePropTools[index].toolDirection;
-                    GlobalMethod.OperateUIDirection(item.stickablObj, (int)item.toolDir);
-                    
-                    index++;
-                }
-                
-                childObj.GetComponent<ChunkClass>().InitChunk();
-                
-            }
-        }
-    }
-
-    private void ResetBagToolInfo()
-    {
-        BagManager.Instance.currentBagList.Clear();
-        foreach (var item in presentLevel.bagTools)
-        {
-            BagManager.Instance.currentBagList.Add(new(item.toolID, item.toolDirection));
-        }
-        
-        BagManager.Instance.UpdateAllTools();
-    }
-
     private Vector3 ReturnVector(float[] pos)
     {
         return new Vector3(pos[0], pos[1], pos[2]);
     }
+
+    #endregion
+
+
     
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
+    
 
 
 

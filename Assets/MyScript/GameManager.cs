@@ -8,7 +8,7 @@ using Unity.Mathematics;
 
 public class GameManager : MonoBehaviour
 {
-    //Defing
+    //Define
     public GameObject playerObj;
 
     public Vector3 playerInitPos;
@@ -17,9 +17,6 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] public List<BagTool> toolStoreList;
 
-
-    public GameObject toolStoreUI;
-
     public GameObject starGlowPrefab;
 
     public GameObject resultUI;
@@ -27,8 +24,6 @@ public class GameManager : MonoBehaviour
     public float levelTime;
 
     public LevelResult presentLevelResult;
-    
-    
 
     private bool gotResult = false;
 
@@ -55,6 +50,8 @@ public class GameManager : MonoBehaviour
     private GameObject EditorPauseUI;
     private GameObject GameButtonsObj;
     private GameObject EditorButtonsObj;
+
+    private GameObject LevelScrollView;
     
     private TMP_Text gamePlayPauseTitle;
     private TMP_Text gamePlayPausePlayerName;
@@ -100,10 +97,10 @@ public class GameManager : MonoBehaviour
             case StateEnum.ChooseLevel:
                 GameButtonsObj = StateList[index].UIObj.transform.Find("GameButtons").gameObject;
                 EditorButtonsObj = StateList[index].UIObj.transform.Find("EditorButtons").gameObject;
+                LevelScrollView = StateList[index].UIObj.transform.Find("ScrollView").gameObject;
                 return;
             case StateEnum.GamePlayPause:
                 AssignGamePlayPauseUI(index);
-                //GamePlayPauseUI = StateList[index].UIObj.transform.Find("PauseUI").gameObject;
                 return;
             case StateEnum.MapEditorPause:
                 EditorPauseUI = StateList[index].UIObj.transform.Find("PauseUI").gameObject;
@@ -245,6 +242,9 @@ public class GameManager : MonoBehaviour
     {
         EditorButtonsObj.SetActive(false);
         GameButtonsObj.SetActive(true);
+        
+        //load local level data
+        LevelScrollView.GetComponent<ScrollViewManager>().ShowLevel();
     }
     
     private void GotoGamePlayAction()
@@ -302,6 +302,9 @@ public class GameManager : MonoBehaviour
     {
         EditorButtonsObj.SetActive(true);
         GameButtonsObj.SetActive(false);
+        
+        //load local level data
+        LevelScrollView.GetComponent<ScrollViewManager>().ShowLevel();
     }
 
     private void GotoMapEditorAction()
@@ -394,6 +397,14 @@ public class GameManager : MonoBehaviour
         //continue the game
         resultUI.SetActive(false);
         menuObj.SetActive(false);
+    }
+
+    public void CreateNewLevel()
+    {
+        int presentLevelCount = SaveSystem.FileList().Count;
+        LevelInfo newLevel = new LevelInfo();
+        newLevel.levelID = presentLevelCount;
+        SaveSystem.SaveLevel(newLevel);
     }
 
 
