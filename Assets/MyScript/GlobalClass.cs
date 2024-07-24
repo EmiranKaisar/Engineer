@@ -43,30 +43,43 @@ public struct PlayerSpawn
     }
     public float[] spawnPos;
 }
+
+[Serializable]
+public class ToolDescription
+{
+    public int toolID;
+    public string toolName;
+    public string description;
+}
+
 [Serializable]
 public class LevelInfo
 {
-    public int levelID;
+    public int levelID = -1;
+    public string levelName;
     public List<PlayerSpawn> playerSpawnList = new List<PlayerSpawn>();
     public List<Chunk> sceneChunkList = new List<Chunk>();
     public List<BagTool> bagToolList = new List<BagTool>();
-    public int levelType;
+    public int levelType = 0;
 }
 
-public class LevelViewInfo
-{
-    public string name;
-}
+// [Serializable]
+// public class LevelPreviewList
+// {
+//     public List<LevelPreview> levelPreviewList = new List<LevelPreview>();
+// }
 
-public struct LevelResult
+
+[Serializable]
+public class LevelPreview
 {
-    public LevelResult(int index, bool success, float dur)
+    public LevelPreview(int id, string name)
     {
-        playerIndex = index;
-        playerSuccess = success;
-        timeDur = dur;
+        levelID = id;
+        levelName = name;
     }
-    public int playerIndex;
-    public bool playerSuccess;
-    public float timeDur;
+    public int levelID;
+    public string levelName;
+    public bool passed = false;
+    public int levelType = 0;
 }

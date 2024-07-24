@@ -25,7 +25,9 @@ public static class SaveSystem
             FileStream stream = new FileStream(path, FileMode.Open);
             
             LevelInfo data = formatter.Deserialize(stream) as LevelInfo;
-
+            
+            stream.Close();
+            
             return data;
         }
         else
@@ -35,28 +37,56 @@ public static class SaveSystem
         }
     }
 
-    public static List<string> FileList()
+    // public static List<string> FileList()
+    // {
+    //     // string [] fileInfo = Directory.GetFiles(basePath, "*.level");
+    //     // List<string> fileList = new List<string>();
+    //
+    //     string tryPath = "";
+    //     List<string> fileList = new List<string>();
+    //     for (int i = 0; i < 100; i++)
+    //     {
+    //         tryPath = basePath + "/level_" + i + ".level";
+    //         if (File.Exists(tryPath))
+    //         {
+    //             fileList.Add("level_" + i );
+    //         }
+    //         else
+    //         {
+    //             break;
+    //         }
+    //
+    //     }
+    //
+    //     return fileList;
+    // }
+
+    public static void SetLevelPreviewList(List<LevelPreview> levelPreviewList)
     {
-        // string [] fileInfo = Directory.GetFiles(basePath, "*.level");
-        // List<string> fileList = new List<string>();
-
-        string tryPath = "";
-        List<string> fileList = new List<string>();
-        for (int i = 0; i < 100; i++)
+        string path = basePath + "/LevelList.level";
+        if (File.Exists(path))
         {
-            tryPath = basePath + "/level_" + i + ".level";
-            if (File.Exists(tryPath))
-            {
-                fileList.Add("level_" + i );
-            }
-            else
-            {
-                break;
-            }
+            BinaryFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(path, FileMode.Open);
             
-            Debug.Log("loop: " + i);
-        }
+            GameManager.Instance.levelPreviewList = formatter.Deserialize(stream) as List<LevelPreview>;
+            
+            stream.Close();
 
-        return fileList;
+        }
+        else
+        {
+            Debug.LogError("file not found in" + path);
+        }
+    }
+
+    public static void SaveLevelPreviewList(List<LevelPreview> levelPreviewList)
+    {
+        BinaryFormatter formatter = new BinaryFormatter();
+        string path = basePath + "/LevelList.level";
+        FileStream stream = new FileStream(path, FileMode.Create);
+        
+        formatter.Serialize(stream, levelPreviewList);
+        stream.Close();
     }
 }

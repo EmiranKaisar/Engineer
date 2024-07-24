@@ -68,7 +68,7 @@ public class ChunkClass : MonoBehaviour
         {
             item.stickablObj.GetComponent<SpriteRenderer>().sprite =
                 SpriteManager.Instance.ReturnToolSprite((int)item.toolID);
-            
+            GlobalMethod.OperateUIDirection(item.stickablObj, (int)item.toolDir);
             UpdateStickState(item);
         }
     }
@@ -107,7 +107,6 @@ public class ChunkClass : MonoBehaviour
                 chunkChildList[index].toolID = selectedTool.toolID;
                 chunkChildList[index].toolDir = selectedTool.toolDirection;
                 UpdateSprite(index, selectedTool.toolID);
-                //chunkChildList[index].stickablObj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)selectedTool.toolID);
 
                 GlobalMethod.OperateUIDirection(chunkChildList[index].stickablObj, (int)selectedTool.toolDirection);
 

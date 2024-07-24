@@ -18,23 +18,34 @@ public class ScrollViewManager : MonoBehaviour
     }
 
     private List<LevelObj> levelObjList = new List<LevelObj>();
-    
-    private List<string> levelList = new List<string>();
 
     public GameObject content;
     
+    private int previousSelectedObjIndex = -1;
     
-    // Start is called before the first frame update
-    void Start()
+    public void ShowLevel()
     {
-        //InitScrollView();
+        InitScrollView();
+        AssignAllObjIndex();
+        AssignAllData();
     }
 
     private void InitScrollView()
     {
+        previousSelectedObjIndex = -1;
         GetItemObj();
         HideAllObj();
-        GetLevelList();
+
+        InitAppearance();
+        UpdateSelectedAppearance(0);
+    }
+
+    private void InitAppearance()
+    {
+        for (int i = 0; i < levelObjList.Count; i++)
+        {
+            HighLight(i, false);
+        }
     }
 
     private void GetItemObj()
@@ -56,22 +67,12 @@ public class ScrollViewManager : MonoBehaviour
         }
     }
 
-    
-    private void GetLevelList()
-    {
-        levelList = SaveSystem.FileList(); 
-    }
 
-    public void ShowLevel()
-    {
-        InitScrollView();
-        AssignAllObjIndex();
-        AssignAllData();
-    }
+
 
     private void AssignAllObjIndex()
     {
-        for (int i = 0; i < levelList.Count; i++)
+        for (int i = 0; i < GameManager.Instance.levelPreviewList.Count; i++)
         {
             AssignObjIndex(i, i);
             AddButtonListener(i);
@@ -86,7 +87,7 @@ public class ScrollViewManager : MonoBehaviour
 
     private void AssignAllData()
     {
-        int dataCount = levelList.Count;
+        int dataCount = GameManager.Instance.levelPreviewList.Count;
         int uiObjCount = levelObjList.Count;
         
         for (int i = 0; i < uiObjCount; i++)
@@ -106,7 +107,7 @@ public class ScrollViewManager : MonoBehaviour
     {
         int levelIndex = levelObjList[objIndex].levelIndex;
         levelObjList[objIndex].levelUI.SetActive(true);
-        levelObjList[objIndex].levelUI.GetComponentInChildren<TMP_Text>().text = levelList[levelIndex];
+        levelObjList[objIndex].levelUI.GetComponentInChildren<TMP_Text>().text = GameManager.Instance.levelPreviewList[levelIndex].levelName;
     }
     
     
@@ -118,7 +119,61 @@ public class ScrollViewManager : MonoBehaviour
     private void PickUIObjButtonAction(int objIndex)
     {
         int levelIndex = levelObjList[objIndex].levelIndex;
-        Debug.Log("picked :" + levelIndex);
+        if (CanSelect(levelIndex) || StateEnum.ChooseEditorLevel == GameManager.Instance.PresentState())
+        {
+            UpdateSelectedAppearance(objIndex);
+            GameManager.Instance.SelectLevel(levelIndex);
+        }
+        
+    }
+
+    private void UpdateSelectedAppearance(int index)
+    {
+        if (index != previousSelectedObjIndex)
+        {
+            //update appearance
+            HighLight(index, true);
+            HighLight(previousSelectedObjIndex, false);
+            previousSelectedObjIndex = index;
+        }
+    }
+
+    private void HighLight(int index, bool highLight)
+    {
+        if (index >= 0 && index < levelObjList.Count)
+        {
+            if (highLight)
+            {
+                levelObjList[index].levelUI.GetComponent<Image>().color = Color.yellow;
+            }
+            else
+            {
+                levelObjList[index].levelUI.GetComponent<Image>().color = Color.white;
+            }
+            
+        }
+    }
+
+    private bool CanSelect(int index)
+    {
+        if (index == 0)
+        {
+            return true;
+        }
+        
+        if (index > 0 && index < levelObjList.Count)
+        {
+            if (GameManager.Instance.levelPreviewList[index - 1].passed)
+            {
+                return true;
+            }
+
+            return false;
+            
+        }
+
+        return false;
+        
     }
     
     

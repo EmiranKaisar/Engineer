@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using Unity.VisualScripting;
 
 public class GlobalParameters : MonoBehaviour
 {
@@ -21,10 +22,12 @@ public class GlobalParameters : MonoBehaviour
 
     public GameObject playerObjs;
     public GameObject levelObjs;
+
+    public GameObject levelEditorObjs;
     
     [HideInInspector]
     public LevelInfo presentLevel = new LevelInfo();
-    
+
     
     public class ChunkObjPool
     {
@@ -46,7 +49,7 @@ public class GlobalParameters : MonoBehaviour
 
         public void PushAll()
         {
-            for (int i = pointer; i >= 0; i--)
+            for (int i = pointer; i > 0; i--)
             {
                 Push();
             }
@@ -54,8 +57,8 @@ public class GlobalParameters : MonoBehaviour
 
         public void Push()
         {
-            chunkObjPool[pointer].SetActive(false);
             pointer--;
+            chunkObjPool[pointer].SetActive(false);
         }
 
         public GameObject Pop()
@@ -70,7 +73,7 @@ public class GlobalParameters : MonoBehaviour
             {
                 int popIndex = pointer;
                 chunkObjPool[popIndex].SetActive(true);
-                pointer--;
+                pointer++;
                 return chunkObjPool[popIndex];
             }
         }
@@ -111,7 +114,7 @@ public class GlobalParameters : MonoBehaviour
         
         public void PushAll()
         {
-            for (int i = pointer; i >= 0; i--)
+            for (int i = pointer; i > 0; i--)
             {
                 Push();
             }
@@ -119,8 +122,8 @@ public class GlobalParameters : MonoBehaviour
 
         public void Push()
         {
-            stickableObjPool[pointer].SetActive(false);
             pointer--;
+            stickableObjPool[pointer].SetActive(false);
         }
 
         public GameObject Pop()
@@ -145,6 +148,7 @@ public class GlobalParameters : MonoBehaviour
             GameObject newStickable = new GameObject("Stickable "+ index);
             newStickable.tag = "Stickable";
             newStickable.layer = LayerMask.NameToLayer("StickableObj");
+            newStickable.AddComponent<SpriteRenderer>();
             newStickable.AddComponent<BoxCollider2D>();
             newStickable.GetComponent<BoxCollider2D>().size = new Vector2(0.9f, 0.9f);
             newStickable.GetComponent<BoxCollider2D>().edgeRadius = 0.05f;
@@ -184,19 +188,13 @@ public class GlobalParameters : MonoBehaviour
     
 
 
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        //from scene to data
-        GetInfo();
-    }
-
-
     #region Get scene info into presentLevel
     
     public void GetInfo()
     {
+        //get level name
+        GetLevelName();
+        
         //get player spawn list
         GetPlayerSpawnPosList();
         
@@ -205,6 +203,11 @@ public class GlobalParameters : MonoBehaviour
         
         //get all tools in bag
         GetBagToolInfo();
+    }
+
+    private void GetLevelName()
+    {
+        presentLevel.levelName = GameManager.Instance.presentLevelName;
     }
 
     private void GetPlayerSpawnPosList()
@@ -220,13 +223,13 @@ public class GlobalParameters : MonoBehaviour
     private void GetPropInfo()
     {
         presentLevel.sceneChunkList.Clear();
-
-        for (int i = 0; i < levelObjs.transform.childCount; i++)
+        
+        for (int i = 0; i < levelEditorObjs.transform.childCount; i++)
         {
-            if (levelObjs.transform.GetChild(i).CompareTag("Chunk") && levelObjs.transform.GetChild(i).gameObject.activeSelf)
+            if (levelEditorObjs.transform.GetChild(i).CompareTag("Chunk") &&  levelEditorObjs.transform.GetChild(i).gameObject.activeSelf)
             {
                 presentLevel.sceneChunkList.Add(new Chunk());
-                foreach (var item in levelObjs.transform.GetChild(i).GetComponent<ChunkClass>().chunkChildList)
+                foreach (var item in levelEditorObjs.transform.GetChild(i).GetComponent<ChunkClass>().chunkChildList)
                 {
                     presentLevel.sceneChunkList[i].chunkPropList.Add(new PropTool((int)item.toolID, (int)item.toolDir, item.stickablObj.transform.position));
                 }
@@ -236,6 +239,7 @@ public class GlobalParameters : MonoBehaviour
 
     private void GetBagToolInfo()
     {
+        presentLevel.bagToolList.Clear();
         foreach (var item in BagManager.Instance.currentBagList)
         {
             presentLevel.bagToolList.Add(new(item.toolID, item.toolDirection));
@@ -260,19 +264,24 @@ public class GlobalParameters : MonoBehaviour
     {
         int index = 0;
 
-        foreach (var playerObj in GameManager.Instance.playerList)
+        foreach (var playerSpawn in presentLevel.playerSpawnList)
         {
-            playerObj.transform.position = ReturnVector(presentLevel.playerSpawnList[index].spawnPos);
+            if(index < GameManager.Instance.playerList.Count)
+               GameManager.Instance.playerList[index].transform.position = ReturnVector(playerSpawn.spawnPos);
+            
             index++;
         }
     }
 
     private void SetPropInfo()
     {
+        
         chunkObjPool.PushAll();
         stickableObjPool.PushAll();
+        
         foreach (var chunkStruct in presentLevel.sceneChunkList)
         {
+            
             GameObject chunk = chunkObjPool.Pop();
             ChunkClass chunkClass = chunk.GetComponent<ChunkClass>();
             chunkClass.chunkChildList.Clear();
@@ -281,7 +290,9 @@ public class GlobalParameters : MonoBehaviour
             {
                 GameObject toolObj = stickableObjPool.Pop();
                 toolObj.transform.position = ReturnVector(toolStruct.toolPos);
+                toolObj.transform.SetParent(chunk.transform);
                 chunkClass.chunkChildList.Add(new ChunkClass.StickableClass(toolStruct.toolID, toolStruct.toolDirection, toolObj));
+                chunkClass.InitChunk();
                 GlobalMethod.OperateUIDirection(toolObj, toolStruct.toolDirection);
             }
         }
@@ -301,16 +312,19 @@ public class GlobalParameters : MonoBehaviour
 
     #endregion
 
+    public void ShowEditorLevelObjs(bool show)
+    {
+        levelEditorObjs.SetActive(show);
+    }
+
+    public void ShowLevelObjs(bool show)
+    {
+        levelObjs.SetActive(show);
+    }
+
 
 
     #region Helper
-    
-    private void SetFloatPosition(float[] floatPos ,Vector3 vectorPos)
-    {
-        floatPos[0] = vectorPos.x;
-        floatPos[1] = vectorPos.y;
-        floatPos[2] = vectorPos.z;
-    }
 
     private Vector3 ReturnVector(float[] pos)
     {
