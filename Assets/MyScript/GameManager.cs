@@ -457,11 +457,11 @@ public class GameManager : MonoBehaviour
     
 
 
-    public void PlayStarGlowAnimation(Vector3 targetPos)
+    public void PlayStarGlowAnimation(GameObject targetObj)
     {
         if(starAnimation != null)
             StopCoroutine(starAnimation);
-        starAnimation = StarAnimation(targetPos);
+        starAnimation = StarAnimation(targetObj);
         StartCoroutine(starAnimation);
     }
     
@@ -501,12 +501,13 @@ public class GameManager : MonoBehaviour
     private WaitForSeconds starAnimDur = new WaitForSeconds(0.4f);
     private GameObject starGlowObj;
     private IEnumerator starAnimation;
-    private IEnumerator StarAnimation(Vector2 targetPos)
+    private IEnumerator StarAnimation(GameObject targetObj)
     {
         if (starGlowObj == null)
         {
-            starGlowObj = Instantiate(starGlowPrefab, targetPos, quaternion.identity);
+            starGlowObj = Instantiate(starGlowPrefab, targetObj.transform.position, quaternion.identity);
         }
+        starGlowObj.transform.SetParent(targetObj.transform);
         starGlowObj.SetActive(true);
         yield return starAnimDur;
         StateButtonAction((int)StateEnum.GamePlayPause);

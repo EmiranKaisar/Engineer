@@ -120,7 +120,7 @@ public class ChunkClass : MonoBehaviour
                 if (chunkChildList[index].toolID == ToolEnum.Destination && selectedTool.toolID == ToolEnum.Star)
                 {
                     //put on star collected animation
-                    GameManager.Instance.PlayStarGlowAnimation(chunkChildList[index].stickablObj.transform.position);
+                    GameManager.Instance.PlayStarGlowAnimation(chunkChildList[index].stickablObj);
                     return true;
                 }
             }
