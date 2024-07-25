@@ -27,11 +27,11 @@ public struct PropTool
     {
         toolID = id;
         toolDirection = dir;
-        toolPos = new[] { pos.x, pos.y, pos.z };
+        toolPos = pos;
     }
     public int toolID;
     public int toolDirection;
-    public float[] toolPos;
+    public Vector3 toolPos;
 }
 
 [Serializable]
@@ -74,6 +74,5 @@ public class LevelPreview
     }
     public int levelID;
     public string levelName;
-    public bool passed = false;
     public int levelType = 0;
 }

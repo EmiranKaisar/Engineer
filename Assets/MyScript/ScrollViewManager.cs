@@ -22,6 +22,11 @@ public class ScrollViewManager : MonoBehaviour
     public GameObject content;
     
     private int previousSelectedObjIndex = -1;
+
+    
+
+    private LevelTemplate tempLevel;
+    
     
     public void ShowLevel()
     {
@@ -72,7 +77,7 @@ public class ScrollViewManager : MonoBehaviour
 
     private void AssignAllObjIndex()
     {
-        for (int i = 0; i < GameManager.Instance.levelPreviewList.Count; i++)
+        for (int i = 0; i < GameManager.Instance.levelPreviewList.previewList.Count; i++)
         {
             AssignObjIndex(i, i);
             AddButtonListener(i);
@@ -87,7 +92,7 @@ public class ScrollViewManager : MonoBehaviour
 
     private void AssignAllData()
     {
-        int dataCount = GameManager.Instance.levelPreviewList.Count;
+        int dataCount = GameManager.Instance.levelPreviewList.previewList.Count;
         int uiObjCount = levelObjList.Count;
         
         for (int i = 0; i < uiObjCount; i++)
@@ -107,7 +112,7 @@ public class ScrollViewManager : MonoBehaviour
     {
         int levelIndex = levelObjList[objIndex].levelIndex;
         levelObjList[objIndex].levelUI.SetActive(true);
-        levelObjList[objIndex].levelUI.GetComponentInChildren<TMP_Text>().text = GameManager.Instance.levelPreviewList[levelIndex].levelName;
+        levelObjList[objIndex].levelUI.GetComponentInChildren<TMP_Text>().text = GameManager.Instance.levelPreviewList.previewList[levelIndex].levelName;
     }
     
     
@@ -124,6 +129,11 @@ public class ScrollViewManager : MonoBehaviour
             UpdateSelectedAppearance(objIndex);
             GameManager.Instance.SelectLevel(levelIndex);
         }
+        
+    }
+
+    private void LevelCount()
+    {
         
     }
 
@@ -156,23 +166,8 @@ public class ScrollViewManager : MonoBehaviour
 
     private bool CanSelect(int index)
     {
-        if (index == 0)
-        {
-            return true;
-        }
-        
-        if (index > 0 && index < levelObjList.Count)
-        {
-            if (GameManager.Instance.levelPreviewList[index - 1].passed)
-            {
-                return true;
-            }
 
-            return false;
-            
-        }
-
-        return false;
+        return true;
         
     }
     

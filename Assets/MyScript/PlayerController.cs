@@ -167,7 +167,7 @@ public class PlayerController : MonoBehaviour
             candidateObj.GetComponentInParent<ChunkClass>()?.CheckTrap(candidateObj, this.gameObject);
             if (candidateObj != previousCandidateObj)
             {
-                candidateObj.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, .9f);
+                candidateObj.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, .8f);
                 if (previousCandidateObj != null)
                     previousCandidateObj.GetComponent<SpriteRenderer>().color = Color.white;
                 previousCandidateObj = candidateObj;

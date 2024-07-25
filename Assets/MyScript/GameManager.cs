@@ -9,11 +9,11 @@ using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
-    public GameObject menuObj;
-
     [SerializeField] public List<BagTool> toolStoreList;
 
     public GameObject starGlowPrefab;
+    
+    public LevelPreviewList levelPreviewList;
 
     public GameObject resultUI;
 
@@ -53,8 +53,6 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] public List<StateClass> StateList;
 
-    public List<LevelPreview> levelPreviewList = new List<LevelPreview>();
-
     private int homeIndex = 0;
     private int presentStateIndex = 0;
     private int previousStateIndex = 0;
@@ -70,7 +68,7 @@ public class GameManager : MonoBehaviour
     private TMP_Text gamePlayPausePlayerName;
     private TMP_Text gamePlayPauseTime;
 
-    private TMP_InputField levelNameInputText;
+    private TMP_Text levelNameText;
 
     private int selectedLevelIndex = 0;
 
@@ -121,7 +119,7 @@ public class GameManager : MonoBehaviour
                 return;
             case StateEnum.MapEditorPause:
                 EditorPauseUI = StateList[index].UIObj.transform.Find("PauseUI").gameObject;
-                levelNameInputText = StateList[index].UIObj.transform.Find("LevelName").GetComponent<TMP_InputField>();
+                levelNameText = StateList[index].UIObj.transform.Find("Title").GetComponent<TMP_Text>();
                 EditorPauseUI.SetActive(false);
                 return;
         }
@@ -228,7 +226,7 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyCode.Escape) && StateList[presentStateIndex].ThisState == StateEnum.GamePlay)
         {
             StateButtonAction((int)StateEnum.GamePlayPause);
         }
@@ -252,11 +250,9 @@ public class GameManager : MonoBehaviour
         EditorButtonsObj.SetActive(false);
         GameButtonsObj.SetActive(true);
         
-        SaveSystem.SetLevelPreviewList(levelPreviewList);
-        
         selectedLevelIndex = 0;
-        
-        GlobalParameters.Instance.presentLevel = SaveSystem.LoadLevel(selectedLevelIndex);
+
+        GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
         
         //load local level data
         LevelScrollView.GetComponent<ScrollViewManager>().ShowLevel();
@@ -318,10 +314,10 @@ public class GameManager : MonoBehaviour
         EditorButtonsObj.SetActive(true);
         GameButtonsObj.SetActive(false);
         
-        SaveSystem.SetLevelPreviewList(levelPreviewList);
 
         selectedLevelIndex = 0;
-        GlobalParameters.Instance.presentLevel = SaveSystem.LoadLevel(selectedLevelIndex);
+        
+        GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
         
         //load local level data
         LevelScrollView.GetComponent<ScrollViewManager>().ShowLevel();
@@ -360,12 +356,10 @@ public class GameManager : MonoBehaviour
         //start the game from the beginning
         gotResult = false;
         if(GlobalParameters.Instance.presentLevel.levelID != selectedLevelIndex)
-             GlobalParameters.Instance.presentLevel = SaveSystem.LoadLevel(selectedLevelIndex);
+             GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
         
-        //hide editor level objs
-        GlobalParameters.Instance.ShowEditorLevelObjs(false);
-        //show level objs
-        GlobalParameters.Instance.ShowLevelObjs(true);
+        
+        GlobalParameters.Instance.EditMode(false);
         
         BagManager.Instance.BagUI.transform.SetParent(StateList[(int)StateEnum.GamePlay].UIObj.transform);
         
@@ -388,25 +382,20 @@ public class GameManager : MonoBehaviour
         //update selected level id before this
         Time.timeScale = 0;
         
-        GlobalParameters.Instance.presentLevel.levelID = selectedLevelIndex;
+        if(GlobalParameters.Instance.presentLevel.levelID != selectedLevelIndex)
+            GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
+
+        levelNameText.text = GlobalParameters.Instance.presentLevel.levelName;
+
         
-        if (levelPreviewList.Count > selectedLevelIndex)
-        {
-            levelNameInputText.text = levelPreviewList[selectedLevelIndex].levelName;
-        }
-             
-        
-        //show editor level objs
-        GlobalParameters.Instance.ShowEditorLevelObjs(true);
-        //hide level objs
-        GlobalParameters.Instance.ShowLevelObjs(false);
+        GlobalParameters.Instance.EditMode(true);
         
         BagManager.Instance.BagUI.transform.SetParent(StateList[(int)StateEnum.MapEditor].UIObj.transform);
     }
 
     public void ConfirmExistEditor()
     {
-        GlobalParameters.Instance.ShowEditorLevelObjs(false);
+        GlobalParameters.Instance.EditMode(false);
     }
     
     public void ClosePauseGameUI()
@@ -419,15 +408,6 @@ public class GameManager : MonoBehaviour
         EditorPauseUI.SetActive(false);
     }
 
-
-    public void CreateNewLevel()
-    {
-        int presentLevelCount = levelPreviewList.Count;
-        SelectLevel(presentLevelCount);
-        GlobalParameters.Instance.presentLevel = new LevelInfo();
-        GlobalParameters.Instance.presentLevel.levelID = presentLevelCount;
-    }
-
     public void SelectLevel(int index)
     {
         selectedLevelIndex = index;
@@ -435,24 +415,32 @@ public class GameManager : MonoBehaviour
 
     public void SaveLevelInfo()
     {
-        presentLevelName = levelNameInputText.text;
-        
+        //get present level info
         GlobalParameters.Instance.GetInfo();
-        
-        //check if this leve is created
-        if (GlobalParameters.Instance.presentLevel.levelID >= levelPreviewList.Count)
+
+        GlobalParameters.Instance.EditMode(false);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+
+    public void NextLevel()
+    {
+        int nextLevelIndex = selectedLevelIndex + 1;
+        if (nextLevelIndex < levelPreviewList.previewList.Count)
         {
-            levelPreviewList.Add(new LevelPreview(levelPreviewList.Count, presentLevelName));
+            SelectLevel(nextLevelIndex);
+            StateButtonAction(3);
+            StartGame();
         }
         else
         {
-            levelPreviewList[selectedLevelIndex].levelName = presentLevelName;
+            //exit game
+            StateButtonAction(2);
         }
-           
-        
-        SaveSystem.SaveLevel(GlobalParameters.Instance.presentLevel);
-        SaveSystem.SaveLevelPreviewList(levelPreviewList);
-        GlobalParameters.Instance.ShowEditorLevelObjs(false);
+            
     }
     
 
@@ -475,11 +463,6 @@ public class GameManager : MonoBehaviour
         if (!success)
         {
             StateButtonAction((int)StateEnum.GamePlayPause);
-        }
-        else
-        {
-            levelPreviewList[selectedLevelIndex].passed = true;
-            SaveSystem.SaveLevelPreviewList(levelPreviewList);
         }
         
     }

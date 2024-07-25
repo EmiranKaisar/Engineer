@@ -29,7 +29,7 @@ public class BagManager : MonoBehaviour
         InitBag();
     }
 
-    private void InitBag()
+    public void InitBag()
     {
         GetBagItemUIList();
         UpdateAllTools();

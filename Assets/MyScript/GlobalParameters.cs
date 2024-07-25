@@ -22,10 +22,8 @@ public class GlobalParameters : MonoBehaviour
     public GameObject levelObjs;
 
     public GameObject levelEditorObjs;
-    
-    [HideInInspector]
-    public LevelInfo presentLevel = new LevelInfo();
 
+    public LevelTemplate presentLevel;
     
     public class ChunkObjPool
     {
@@ -183,37 +181,39 @@ public class GlobalParameters : MonoBehaviour
         stickableObjPool.InitStickablePool(20, levelObjs);
 
     }
-    
 
+
+    public bool LoadLevel(int levelID)
+    {
+        presentLevel = Resources.Load("Level/Level_" + levelID) as LevelTemplate;
+        if (presentLevel != null)
+        {
+            return true;
+        }
+        
+        Debug.LogError("there is no such level");
+        return false;
+    }
+    
 
     #region Get scene info into presentLevel
     
     public void GetInfo()
     {
-        //get level name
-        GetLevelName();
-        
         //get player spawn list
         GetPlayerSpawnPosList();
         
         //get all other objs info
         GetPropInfo();
-        
-        //get all tools in bag
-        GetBagToolInfo();
     }
-
-    private void GetLevelName()
-    {
-        presentLevel.levelName = GameManager.Instance.presentLevelName;
-    }
+    
 
     private void GetPlayerSpawnPosList()
     {
         presentLevel.playerSpawnList.Clear();
         for (int i = 0; i < playerObjs.transform.childCount; i++)
         {
-            presentLevel.playerSpawnList.Add(new PlayerSpawn(playerObjs.transform.GetChild(i).position));
+            presentLevel.playerSpawnList.Add(playerObjs.transform.GetChild(i).position);
         }
     }
 
@@ -221,27 +221,35 @@ public class GlobalParameters : MonoBehaviour
     private void GetPropInfo()
     {
         presentLevel.sceneChunkList.Clear();
-        
-        for (int i = 0; i < levelEditorObjs.transform.childCount; i++)
+
+        int index = 0;
+
+        foreach (Transform obj in levelEditorObjs.transform)
         {
-            if (levelEditorObjs.transform.GetChild(i).CompareTag("Chunk") &&  levelEditorObjs.transform.GetChild(i).gameObject.activeSelf)
+            if (obj.CompareTag("Chunk") &&  obj.gameObject.activeSelf)
             {
                 presentLevel.sceneChunkList.Add(new Chunk());
-                foreach (var item in levelEditorObjs.transform.GetChild(i).GetComponent<ChunkClass>().chunkChildList)
+                foreach (var item in obj.GetComponent<ChunkClass>().chunkChildList)
                 {
-                    presentLevel.sceneChunkList[i].chunkPropList.Add(new PropTool((int)item.toolID, (int)item.toolDir, item.stickablObj.transform.position));
+                    presentLevel.sceneChunkList[index].chunkPropList.Add(new PropTool((int)item.toolID, (int)item.toolDir, item.stickablObj.transform.position));
                 }
+
+                index++;
             }
         }
-    }
-
-    private void GetBagToolInfo()
-    {
-        presentLevel.bagToolList.Clear();
-        foreach (var item in BagManager.Instance.currentBagList)
-        {
-            presentLevel.bagToolList.Add(new(item.toolID, item.toolDirection));
-        }
+        //
+        // for (int i = 0; i < levelEditorObjs.transform.childCount; i++)
+        // {
+        //     if (levelEditorObjs.transform.GetChild(i).CompareTag("Chunk") &&  levelEditorObjs.transform.GetChild(i).gameObject.activeSelf)
+        //     {
+        //         presentLevel.sceneChunkList.Add(new Chunk());
+        //         Debug.Log(i);
+        //         foreach (var item in levelEditorObjs.transform.GetChild(i).GetComponent<ChunkClass>().chunkChildList)
+        //         {
+        //             presentLevel.sceneChunkList[i].chunkPropList.Add(new PropTool((int)item.toolID, (int)item.toolDir, item.stickablObj.transform.position));
+        //         }
+        //     }
+        // }
     }
     
 
@@ -265,7 +273,7 @@ public class GlobalParameters : MonoBehaviour
         foreach (var playerSpawn in presentLevel.playerSpawnList)
         {
             if(index < GameManager.Instance.playerList.Count)
-               GameManager.Instance.playerList[index].transform.position = ReturnVector(playerSpawn.spawnPos);
+               GameManager.Instance.playerList[index].transform.position = playerSpawn;
             
             index++;
         }
@@ -287,7 +295,7 @@ public class GlobalParameters : MonoBehaviour
             foreach (var toolStruct in chunkStruct.chunkPropList)
             {
                 GameObject toolObj = stickableObjPool.Pop();
-                toolObj.transform.position = ReturnVector(toolStruct.toolPos);
+                toolObj.transform.position = toolStruct.toolPos;
                 toolObj.transform.SetParent(chunk.transform);
                 chunkClass.chunkChildList.Add(new ChunkClass.StickableClass(toolStruct.toolID, toolStruct.toolDirection, toolObj));
                 chunkClass.InitChunk();
@@ -304,32 +312,27 @@ public class GlobalParameters : MonoBehaviour
             BagManager.Instance.currentBagList.Add(new(item.toolID, item.toolDirection));
         }
         
-        BagManager.Instance.UpdateAllTools();
+        BagManager.Instance.InitBag();
     }
     
 
     #endregion
 
-    public void ShowEditorLevelObjs(bool show)
+    public void EditMode(bool editMode)
     {
-        levelEditorObjs.SetActive(show);
+        if (editMode)
+        {
+            levelEditorObjs.SetActive(true);
+
+            levelObjs.SetActive(false);
+        }
+        else
+        {
+            levelEditorObjs.SetActive(false);
+            levelObjs.SetActive(true);
+        }
     }
-
-    public void ShowLevelObjs(bool show)
-    {
-        levelObjs.SetActive(show);
-    }
-
-
-
-    #region Helper
-
-    private Vector3 ReturnVector(float[] pos)
-    {
-        return new Vector3(pos[0], pos[1], pos[2]);
-    }
-
-    #endregion
+    
 
 
     

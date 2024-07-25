@@ -39,8 +39,7 @@ public class ChunkClass : MonoBehaviour
     private Vector3 presentCentre;
 
     private int rotateCount = 0;
-
-    public List<GameObject> enteredPlayerList = new List<GameObject>();
+    
 
     // Start is called before the first frame update
     void Start()
@@ -51,7 +50,7 @@ public class ChunkClass : MonoBehaviour
         //init centre
         InitCentre();
     }
-
+    
     public void InitChunk()
     {
         InitProp();
@@ -339,7 +338,7 @@ public class ChunkClass : MonoBehaviour
                     StopCoroutine(rotateProcedure);
                     chunkTransform.rotation *= Quaternion.identity;
                 }
-                rotateProcedure = RotateProcedure(accumulatedRotDur * 0.8f);
+                rotateProcedure = RotateProcedure(accumulatedRotDur * 0.2f);
                 StartCoroutine(rotateProcedure);
             }
         }
@@ -354,6 +353,8 @@ public class ChunkClass : MonoBehaviour
     #region Coroutine
     
     private IEnumerator rotateProcedure;
+    private WaitForSeconds rotateDelta = new WaitForSeconds(0.01f);
+    private float rotateDeltaFloat = 0.01f;
     private IEnumerator RotateProcedure(float procedureDur)
     {
         //在此过程中，停止移动
@@ -363,9 +364,9 @@ public class ChunkClass : MonoBehaviour
         Quaternion targetRot = presentRot * Quaternion.AngleAxis(90, Vector3.forward);
         while (timer <= procedureDur)
         {
-            timer += Time.fixedDeltaTime;
+            timer += rotateDeltaFloat;
             chunkTransform.rotation = Quaternion.Lerp(presentRot, targetRot, timer / procedureDur);
-            yield return null;
+            yield return rotateDelta;
         }
 
         UpdateAfterRotation();
