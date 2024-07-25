@@ -46,6 +46,8 @@ public enum DetectorEnum
 
 public enum LevelType
 {
-    Legacy,
-    Custom
+    SinglePlayerLegacy,
+    MultiPlayerLegacy,
+    SinglePlayerCustom,
+    MultiPlayerCustom,
 }

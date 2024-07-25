@@ -14,6 +14,13 @@ public struct BagTool
     public ToolDirection toolDirection;
 }
 
+[Serializable]
+public class Chunk
+{
+    public List<PropTool> chunkPropList = new List<PropTool>();
+}
+
+[Serializable]
 public struct PropTool
 {
     public PropTool(int id, int dir, Vector3 pos)
@@ -27,24 +34,46 @@ public struct PropTool
     public float[] toolPos;
 }
 
-public class LevelInfo
+[Serializable]
+public struct PlayerSpawn
 {
-    public int levelID;
-    public float[] playerInstantiatePos = new float[3];
-    public List<PropTool> scenePropTools = new List<PropTool>();
-    public List<BagTool> bagTools = new List<BagTool>();
-    public int levelType;
+    public PlayerSpawn(Vector3 pos)
+    {
+        spawnPos = new[] { pos.x, pos.y, pos.z };
+    }
+    public float[] spawnPos;
 }
 
-public struct LevelResult
+[Serializable]
+public class ToolDescription
 {
-    public LevelResult(int index, bool success, float dur)
+    public int toolID;
+    public string toolName;
+    public string description;
+}
+
+[Serializable]
+public class LevelInfo
+{
+    public int levelID = -1;
+    public string levelName;
+    public List<PlayerSpawn> playerSpawnList = new List<PlayerSpawn>();
+    public List<Chunk> sceneChunkList = new List<Chunk>();
+    public List<BagTool> bagToolList = new List<BagTool>();
+    public int levelType = 0;
+}
+
+
+[Serializable]
+public class LevelPreview
+{
+    public LevelPreview(int id, string name)
     {
-        playerIndex = index;
-        playerSuccess = success;
-        timeDur = dur;
+        levelID = id;
+        levelName = name;
     }
-    public int playerIndex;
-    public bool playerSuccess;
-    public float timeDur;
+    public int levelID;
+    public string levelName;
+    public bool passed = false;
+    public int levelType = 0;
 }

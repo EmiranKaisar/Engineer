@@ -5,30 +5,36 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.Mathematics;
+using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
-    //Defing
-    public GameObject playerObj;
-
-    public Vector3 playerInitPos;
-
     public GameObject menuObj;
 
     [SerializeField] public List<BagTool> toolStoreList;
-
-
-    public GameObject toolStoreUI;
 
     public GameObject starGlowPrefab;
 
     public GameObject resultUI;
 
     public float levelTime;
+    
+    public struct LevelResult
+    {
+        public LevelResult(int index, bool success, float dur)
+        {
+            playerIndex = index;
+            playerSuccess = success;
+            timeDur = dur;
+        }
+        public int playerIndex;
+        public bool playerSuccess;
+        public float timeDur;
+    }
 
     public LevelResult presentLevelResult;
-    
-    
+
+    public string presentLevelName;
 
     private bool gotResult = false;
 
@@ -47,6 +53,8 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] public List<StateClass> StateList;
 
+    public List<LevelPreview> levelPreviewList = new List<LevelPreview>();
+
     private int homeIndex = 0;
     private int presentStateIndex = 0;
     private int previousStateIndex = 0;
@@ -55,10 +63,16 @@ public class GameManager : MonoBehaviour
     private GameObject EditorPauseUI;
     private GameObject GameButtonsObj;
     private GameObject EditorButtonsObj;
+
+    private GameObject LevelScrollView;
     
     private TMP_Text gamePlayPauseTitle;
     private TMP_Text gamePlayPausePlayerName;
     private TMP_Text gamePlayPauseTime;
+
+    private TMP_InputField levelNameInputText;
+
+    private int selectedLevelIndex = 0;
 
     public static GameManager Instance { get; private set; }
 
@@ -100,13 +114,15 @@ public class GameManager : MonoBehaviour
             case StateEnum.ChooseLevel:
                 GameButtonsObj = StateList[index].UIObj.transform.Find("GameButtons").gameObject;
                 EditorButtonsObj = StateList[index].UIObj.transform.Find("EditorButtons").gameObject;
+                LevelScrollView = StateList[index].UIObj.transform.Find("ScrollView").gameObject;
                 return;
             case StateEnum.GamePlayPause:
                 AssignGamePlayPauseUI(index);
-                //GamePlayPauseUI = StateList[index].UIObj.transform.Find("PauseUI").gameObject;
                 return;
             case StateEnum.MapEditorPause:
                 EditorPauseUI = StateList[index].UIObj.transform.Find("PauseUI").gameObject;
+                levelNameInputText = StateList[index].UIObj.transform.Find("LevelName").GetComponent<TMP_InputField>();
+                EditorPauseUI.SetActive(false);
                 return;
         }
     }
@@ -148,16 +164,12 @@ public class GameManager : MonoBehaviour
         gamePlayPauseTitle = GamePlayPauseUI.transform.Find("Title").GetComponent<TMP_Text>();
         gamePlayPausePlayerName = GamePlayPauseUI.transform.Find("PlayerName").GetComponent<TMP_Text>();
         gamePlayPauseTime = GamePlayPauseUI.transform.Find("Time").GetComponent<TMP_Text>();
-    }
-
-    private void Start()
-    {
-        playerObj.transform.position = playerInitPos;
+        GamePlayPauseUI.SetActive(false);
     }
 
     private void InitGame()
     {
-        
+        Time.timeScale = 0;
         InitUI();
     }
 
@@ -216,12 +228,6 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            playerObj.transform.position = playerInitPos;
-        }
-
-
         if (Input.GetKeyDown(KeyCode.Q))
         {
             StateButtonAction((int)StateEnum.GamePlayPause);
@@ -245,11 +251,21 @@ public class GameManager : MonoBehaviour
     {
         EditorButtonsObj.SetActive(false);
         GameButtonsObj.SetActive(true);
+        
+        SaveSystem.SetLevelPreviewList(levelPreviewList);
+        
+        selectedLevelIndex = 0;
+        
+        GlobalParameters.Instance.presentLevel = SaveSystem.LoadLevel(selectedLevelIndex);
+        
+        //load local level data
+        LevelScrollView.GetComponent<ScrollViewManager>().ShowLevel();
     }
     
     private void GotoGamePlayAction()
     {
         Time.timeScale = 1;
+        ClosePauseGameUI();
         if(starGlowObj != null)
             starGlowObj.SetActive(false);
         switch (StateList[previousStateIndex].ThisState)
@@ -265,7 +281,6 @@ public class GameManager : MonoBehaviour
                 return;
         }
     }
-
 
     private void GotoGamePlayPauseAction()
     {
@@ -302,20 +317,26 @@ public class GameManager : MonoBehaviour
     {
         EditorButtonsObj.SetActive(true);
         GameButtonsObj.SetActive(false);
+        
+        SaveSystem.SetLevelPreviewList(levelPreviewList);
+
+        selectedLevelIndex = 0;
+        GlobalParameters.Instance.presentLevel = SaveSystem.LoadLevel(selectedLevelIndex);
+        
+        //load local level data
+        LevelScrollView.GetComponent<ScrollViewManager>().ShowLevel();
     }
 
     private void GotoMapEditorAction()
     {
         switch (StateList[previousStateIndex].ThisState)
         {
-            case StateEnum.GamePlay:
-                BackToEditor();
-                return;
             case StateEnum.ChooseEditorLevel:
+                ClosePauseEditorUI();
                 StartEditor();
                 return;
             case StateEnum.MapEditorPause:
-                BackToEditor();
+                ClosePauseEditorUI();
                 return;
         }
     }
@@ -338,7 +359,19 @@ public class GameManager : MonoBehaviour
     {
         //start the game from the beginning
         gotResult = false;
+        if(GlobalParameters.Instance.presentLevel.levelID != selectedLevelIndex)
+             GlobalParameters.Instance.presentLevel = SaveSystem.LoadLevel(selectedLevelIndex);
+        
+        //hide editor level objs
+        GlobalParameters.Instance.ShowEditorLevelObjs(false);
+        //show level objs
+        GlobalParameters.Instance.ShowLevelObjs(true);
+        
+        BagManager.Instance.BagUI.transform.SetParent(StateList[(int)StateEnum.GamePlay].UIObj.transform);
+        
+        
         GlobalParameters.Instance.ResetLevel();
+        
         StartPlayerComponents();
     }
 
@@ -350,34 +383,32 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void BackToGame()
-    {
-        //just return to game
-    }
-
     private void StartEditor()
     {
+        //update selected level id before this
+        Time.timeScale = 0;
         
-    }
-
-    private void BackToEditor()
-    {
+        GlobalParameters.Instance.presentLevel.levelID = selectedLevelIndex;
         
+        if (levelPreviewList.Count > selectedLevelIndex)
+        {
+            levelNameInputText.text = levelPreviewList[selectedLevelIndex].levelName;
+        }
+             
+        
+        //show editor level objs
+        GlobalParameters.Instance.ShowEditorLevelObjs(true);
+        //hide level objs
+        GlobalParameters.Instance.ShowLevelObjs(false);
+        
+        BagManager.Instance.BagUI.transform.SetParent(StateList[(int)StateEnum.MapEditor].UIObj.transform);
     }
 
-
-    public void OpenMenu()
+    public void ConfirmExistEditor()
     {
-        //pause the game
-        //present tool item UI, each UI is a button containing an action with index as a reference
-
-        menuObj.SetActive(true);
-        resultUI.SetActive(false);
+        GlobalParameters.Instance.ShowEditorLevelObjs(false);
     }
-
     
-
-
     public void ClosePauseGameUI()
     {
         GamePlayPauseUI.SetActive(false);
@@ -388,20 +419,49 @@ public class GameManager : MonoBehaviour
         EditorPauseUI.SetActive(false);
     }
 
-    public void CloseMenus()
+
+    public void CreateNewLevel()
     {
-        // Hide UI
-        //continue the game
-        resultUI.SetActive(false);
-        menuObj.SetActive(false);
+        int presentLevelCount = levelPreviewList.Count;
+        SelectLevel(presentLevelCount);
+        GlobalParameters.Instance.presentLevel = new LevelInfo();
+        GlobalParameters.Instance.presentLevel.levelID = presentLevelCount;
     }
 
+    public void SelectLevel(int index)
+    {
+        selectedLevelIndex = index;
+    }
 
-    public void PlayStarGlowAnimation(Vector3 targetPos)
+    public void SaveLevelInfo()
+    {
+        presentLevelName = levelNameInputText.text;
+        
+        GlobalParameters.Instance.GetInfo();
+        
+        //check if this leve is created
+        if (GlobalParameters.Instance.presentLevel.levelID >= levelPreviewList.Count)
+        {
+            levelPreviewList.Add(new LevelPreview(levelPreviewList.Count, presentLevelName));
+        }
+        else
+        {
+            levelPreviewList[selectedLevelIndex].levelName = presentLevelName;
+        }
+           
+        
+        SaveSystem.SaveLevel(GlobalParameters.Instance.presentLevel);
+        SaveSystem.SaveLevelPreviewList(levelPreviewList);
+        GlobalParameters.Instance.ShowEditorLevelObjs(false);
+    }
+    
+
+
+    public void PlayStarGlowAnimation(GameObject targetObj)
     {
         if(starAnimation != null)
             StopCoroutine(starAnimation);
-        starAnimation = StarAnimation(targetPos);
+        starAnimation = StarAnimation(targetObj);
         StartCoroutine(starAnimation);
     }
     
@@ -416,17 +476,24 @@ public class GameManager : MonoBehaviour
         {
             StateButtonAction((int)StateEnum.GamePlayPause);
         }
+        else
+        {
+            levelPreviewList[selectedLevelIndex].passed = true;
+            SaveSystem.SaveLevelPreviewList(levelPreviewList);
+        }
         
     }
-    
+
+    #region API
 
 
-    public void ShowResult(string result)
+    public StateEnum PresentState()
     {
-        menuObj.SetActive(true);
-        resultUI.SetActive(true);
-        resultUI.GetComponentInChildren<TMP_Text>().text = result;
+        return StateList[presentStateIndex].ThisState;
     }
+
+    #endregion
+    
 
     #region Animation
 
@@ -434,12 +501,13 @@ public class GameManager : MonoBehaviour
     private WaitForSeconds starAnimDur = new WaitForSeconds(0.4f);
     private GameObject starGlowObj;
     private IEnumerator starAnimation;
-    private IEnumerator StarAnimation(Vector2 targetPos)
+    private IEnumerator StarAnimation(GameObject targetObj)
     {
         if (starGlowObj == null)
         {
-            starGlowObj = Instantiate(starGlowPrefab, targetPos, quaternion.identity);
+            starGlowObj = Instantiate(starGlowPrefab, targetObj.transform.position, quaternion.identity);
         }
+        starGlowObj.transform.SetParent(targetObj.transform);
         starGlowObj.SetActive(true);
         yield return starAnimDur;
         StateButtonAction((int)StateEnum.GamePlayPause);

@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.UIElements;
 
 public class ChunkClass : MonoBehaviour
 {
@@ -20,6 +18,12 @@ public class ChunkClass : MonoBehaviour
     [Serializable]
     public class StickableClass
     {
+        public StickableClass(int id, int dir, GameObject obj)
+        {
+            toolID = (ToolEnum)id;
+            toolDir = (ToolDirection)dir;
+            stickablObj = obj;
+        }
         public bool sticked = false;
         public ToolEnum toolID;
         public ToolDirection toolDir;
@@ -64,7 +68,7 @@ public class ChunkClass : MonoBehaviour
         {
             item.stickablObj.GetComponent<SpriteRenderer>().sprite =
                 SpriteManager.Instance.ReturnToolSprite((int)item.toolID);
-            
+            GlobalMethod.OperateUIDirection(item.stickablObj, (int)item.toolDir);
             UpdateStickState(item);
         }
     }
@@ -103,7 +107,6 @@ public class ChunkClass : MonoBehaviour
                 chunkChildList[index].toolID = selectedTool.toolID;
                 chunkChildList[index].toolDir = selectedTool.toolDirection;
                 UpdateSprite(index, selectedTool.toolID);
-                //chunkChildList[index].stickablObj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)selectedTool.toolID);
 
                 GlobalMethod.OperateUIDirection(chunkChildList[index].stickablObj, (int)selectedTool.toolDirection);
 
@@ -119,7 +122,7 @@ public class ChunkClass : MonoBehaviour
                 if (chunkChildList[index].toolID == ToolEnum.Destination && selectedTool.toolID == ToolEnum.Star)
                 {
                     //put on star collected animation
-                    GameManager.Instance.PlayStarGlowAnimation(chunkChildList[index].stickablObj.transform.position);
+                    GameManager.Instance.PlayStarGlowAnimation(chunkChildList[index].stickablObj);
                     return true;
                 }
             }
