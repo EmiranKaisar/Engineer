@@ -63,12 +63,6 @@ public class LevelInfo
     public int levelType = 0;
 }
 
-// [Serializable]
-// public class LevelPreviewList
-// {
-//     public List<LevelPreview> levelPreviewList = new List<LevelPreview>();
-// }
-
 
 [Serializable]
 public class LevelPreview
