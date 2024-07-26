@@ -11,6 +11,8 @@ public enum ToolEnum
     Star,
     Destination,
     Corpse,
+    Attack,
+    Killer,
 }
 
 
@@ -33,6 +35,7 @@ public enum StateEnum
     ChooseEditorLevel,
     MapEditor,
     MapEditorPause,
+    GamePlayHint,
 }
 
 public enum DetectorEnum

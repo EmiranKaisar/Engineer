@@ -69,6 +69,13 @@ public class ChunkClass : MonoBehaviour
                 SpriteManager.Instance.ReturnToolSprite((int)item.toolID);
             GlobalMethod.OperateUIDirection(item.stickablObj, (int)item.toolDir);
             UpdateStickState(item);
+
+            if (item.toolID == ToolEnum.Killer)
+            {
+                if(this.gameObject.GetComponent<KillerController>() == null)
+                     this.gameObject.AddComponent<KillerController>();
+            }
+                
         }
     }
 
@@ -160,6 +167,8 @@ public class ChunkClass : MonoBehaviour
         chunkChildList[index].stickablObj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)toolID);
     }
 
+    #region Check trap
+
     public void CheckTrap(GameObject obj, GameObject player)
     {
         int index = ReturnIndexByObj(obj);
@@ -194,6 +203,9 @@ public class ChunkClass : MonoBehaviour
         stickPlayerAnim = StickPlayerAnim(player, index);
         StartCoroutine(stickPlayerAnim);
     }
+
+    #endregion
+    
 
     private void UpdateStickState(StickableClass item)
     {
@@ -324,9 +336,19 @@ public class ChunkClass : MonoBehaviour
     private float rotateTimer = 0;
     private void FixedUpdate()
     {
+        ApplyMovement();
+        ApplyRotation();
+        UpdateAttack();
+    }
+
+    private void ApplyMovement()
+    {
         if (!inRotateProcedure)
             chunkTransform.position += accumulatedMove * Time.fixedDeltaTime;
+    }
 
+    private void ApplyRotation()
+    {
         if (rotateCount > 0)
         {
             rotateTimer += Time.fixedDeltaTime;
@@ -349,6 +371,51 @@ public class ChunkClass : MonoBehaviour
     }
     
     #endregion
+
+    private void UpdateAttack()
+    {
+        if (!inRotateProcedure)
+        {
+            for (int i = 0; i < chunkChildList.Count; i++)
+            {
+                if(chunkChildList[i].toolID == ToolEnum.Attack)
+                    ApplyAttack(i);
+            }
+        }
+
+    }
+
+    private float attackDistance = .2f;
+    private RaycastHit2D attackHit;
+    private Vector3 attackDir;
+    private List<Vector3> attackOriginList = new List<Vector3>()
+    {
+        new Vector3(0.52f, 0.45f, 0),
+        new Vector3(0.52f, -0.45f, 0)
+    };
+
+    private GameObject upper;
+    private GameObject lower;
+    private Vector3 attackOrigin;
+    private void ApplyAttack(int index)
+    {
+        attackDir = chunkChildList[index].stickablObj.transform.right;
+        int posIndex= 0;
+        foreach (var attack in attackOriginList)
+        {
+            attackOrigin = chunkChildList[index].stickablObj.transform.TransformPoint(attack);
+            attackHit = Physics2D.Raycast(attackOrigin, attackDir, attackDistance);
+            if (attackHit.collider != null)
+            {
+                attackHit.collider.GetComponent<IAlive>()?.GotAttacked();
+                attackHit.collider.GetComponentInParent<IAlive>()?.GotAttacked();
+            }
+
+            posIndex++;
+        }
+
+    }
+    
     
     #region Coroutine
     

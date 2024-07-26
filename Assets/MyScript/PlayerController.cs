@@ -6,7 +6,7 @@ using UnityEngine.Events;
 using UnityEngine.Serialization;
 using SpriteRenderer = UnityEngine.SpriteRenderer;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IAlive
 {
     [SerializeField] private float m_JumpForce = 400f; // Amount of force added when the player jumps.
 
@@ -103,38 +103,79 @@ public class PlayerController : MonoBehaviour
     {
         faceDetectorList[index].collided = false;
         faceDetectorList[index].hasCandidate = false;
-        for (int i = 0; i < faceDetectorList[index].pointDetector.Length; i++)
+        
+        Vector2 originPos1 = new Vector2(playerTransform.position.x, playerTransform.position.y) +
+                            faceDetectorList[index].pointDetector[0].detectPos;
+        Vector2 originPos2 = new Vector2(playerTransform.position.x, playerTransform.position.y) +
+            faceDetectorList[index].pointDetector[1].detectPos;
+        
+        
+        Collider2D[] collider1 = Physics2D.OverlapCircleAll(originPos1, k_DetectorRadius, m_WhatIsGround);
+        
+        Collider2D[] collider2 = Physics2D.OverlapCircleAll(originPos2, k_DetectorRadius, m_WhatIsGround);
+
+        if (collider1.Length > 0 || collider2.Length > 0)
         {
-            bool newObj = true;
-            Vector2 originPos = new Vector2(playerTransform.position.x, playerTransform.position.y) +
-                                faceDetectorList[index].pointDetector[i].detectPos;
-            Collider2D[] colliders = Physics2D.OverlapCircleAll(originPos, k_DetectorRadius, m_WhatIsGround);
-
-            if (colliders.Length > 0)
+            faceDetectorList[index].collided = true;
+            for (int i = 0; i < collider1.Length; i++)
             {
-                faceDetectorList[index].collided = true;
-                for (int j = 0; j < colliders.Length; j++)
+                for (int j = 0; j < collider2.Length; j++)
                 {
-                    if (faceDetectorList[index].pointDetector[i].stickableObj == colliders[j])
-                        newObj = false;
-                    
+                    if (collider1[i].gameObject == collider2[j].gameObject)
+                    {
+                        faceDetectorList[index].hasCandidate = true;
+                        faceDetectorList[index].pointDetector[0].stickableObj = collider1[i].gameObject;
+                        faceDetectorList[index].pointDetector[1].stickableObj = collider1[i].gameObject;
+                    }
+                        
                 }
-
-                if (newObj)
-                    faceDetectorList[index].pointDetector[i].stickableObj =
-                        colliders[0].gameObject;
             }
-            else
-            {
-                faceDetectorList[index].pointDetector[i].stickableObj = null;
-            }
-
+        }
+        else
+        {
+            faceDetectorList[index].pointDetector[0].stickableObj = null;
+            faceDetectorList[index].pointDetector[1].stickableObj = null;
         }
         
 
-        if (faceDetectorList[index].pointDetector[0].stickableObj ==
-            faceDetectorList[index].pointDetector[1].stickableObj && faceDetectorList[index].collided)
-            faceDetectorList[index].hasCandidate = true;
+        
+        // for (int i = 0; i < faceDetectorList[index].pointDetector.Length; i++)
+        // {
+        //     bool newObj = true;
+        //     int newIndex = 0;
+        //     Vector2 originPos = new Vector2(playerTransform.position.x, playerTransform.position.y) +
+        //                         faceDetectorList[index].pointDetector[i].detectPos;
+        //     Collider2D[] colliders = Physics2D.OverlapCircleAll(originPos, k_DetectorRadius, m_WhatIsGround);
+        //
+        //     if (colliders.Length > 0)
+        //     {
+        //         faceDetectorList[index].collided = true;
+        //
+        //         for (int j = 0; j < colliders.Length; j++)
+        //         {
+        //             if (faceDetectorList[index].pointDetector[i].stickableObj == colliders[j].gameObject)
+        //             {
+        //                 newObj = false;
+        //             }
+        //                 
+        //             
+        //         }
+        //         
+        //         if (newObj)
+        //             faceDetectorList[index].pointDetector[i].stickableObj =
+        //                 colliders[colliders.Length - 1].gameObject;
+        //     }
+        //     else
+        //     {
+        //         faceDetectorList[index].pointDetector[i].stickableObj = null;
+        //     }
+        //
+        // }
+        
+
+        // if (faceDetectorList[index].pointDetector[0].stickableObj ==
+        //     faceDetectorList[index].pointDetector[1].stickableObj && faceDetectorList[index].collided)
+        //     faceDetectorList[index].hasCandidate = true;
 
     }
 
@@ -167,7 +208,7 @@ public class PlayerController : MonoBehaviour
             candidateObj.GetComponentInParent<ChunkClass>()?.CheckTrap(candidateObj, this.gameObject);
             if (candidateObj != previousCandidateObj)
             {
-                candidateObj.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, .8f);
+                candidateObj.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, .7f);
                 if (previousCandidateObj != null)
                     previousCandidateObj.GetComponent<SpriteRenderer>().color = Color.white;
                 previousCandidateObj = candidateObj;
@@ -295,6 +336,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void GotAttacked()
+    {
+        PlayerDie();
+    }
 
     public void PlayerDie()
     {

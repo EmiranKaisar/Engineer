@@ -15,8 +15,6 @@ public class GameManager : MonoBehaviour
     
     public LevelPreviewList levelPreviewList;
 
-    public GameObject resultUI;
-
     public float levelTime;
     
     public struct LevelResult
@@ -34,13 +32,11 @@ public class GameManager : MonoBehaviour
 
     public LevelResult presentLevelResult;
 
-    public string presentLevelName;
-
     private bool gotResult = false;
 
-    private List<GameObject> toolItemUIList = new List<GameObject>();
-
     public List<GameObject> playerList = new List<GameObject>();
+
+    public List<GameObject> killerList = new List<GameObject>();
     public delegate void StateChangeAction();
 
     [Serializable]
@@ -61,6 +57,11 @@ public class GameManager : MonoBehaviour
     private GameObject EditorPauseUI;
     private GameObject GameButtonsObj;
     private GameObject EditorButtonsObj;
+
+    private GameObject HintUI;
+    private TMP_Text gamePlayHintTitle;
+    private TMP_Text gamePlayHintDescription;
+    private Image gamePlayHintImage;
 
     private GameObject LevelScrollView;
     
@@ -83,6 +84,8 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
+        
+        DontDestroyOnLoad(Instance);
         CheckState();
         
         InitGame();
@@ -115,6 +118,7 @@ public class GameManager : MonoBehaviour
                 LevelScrollView = StateList[index].UIObj.transform.Find("ScrollView").gameObject;
                 return;
             case StateEnum.GamePlayPause:
+                AssignGamePlayHintUI(index);
                 AssignGamePlayPauseUI(index);
                 return;
             case StateEnum.MapEditorPause:
@@ -153,9 +157,21 @@ public class GameManager : MonoBehaviour
             case StateEnum.MapEditorPause:
                 StateList[index].stateAction += GotoMapEditorPauseAction;
                 return;
+            case StateEnum.GamePlayHint:
+                StateList[index].stateAction += GotoGamePlayHintAction;
+                return;
         }
     }
 
+    private void AssignGamePlayHintUI(int index)
+    {
+        HintUI = StateList[index].UIObj.transform.Find("HintUI").gameObject;
+        gamePlayHintTitle = HintUI.transform.Find("Title").GetComponent<TMP_Text>();
+        gamePlayHintDescription = HintUI.transform.Find("Description").GetComponent<TMP_Text>();
+        gamePlayHintImage = HintUI.transform.Find("Image").GetComponent<Image>();
+        HintUI.SetActive(false);
+    }
+    
     private void AssignGamePlayPauseUI(int index)
     {
         GamePlayPauseUI = StateList[index].UIObj.transform.Find("PauseUI").gameObject;
@@ -262,20 +278,15 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 1;
         ClosePauseGameUI();
+        CloseHintUI();
         if(starGlowObj != null)
             starGlowObj.SetActive(false);
-        switch (StateList[previousStateIndex].ThisState)
+
+        if (StateList[previousStateIndex].ThisState != StateEnum.GamePlayPause && StateList[previousStateIndex].ThisState != StateEnum.GamePlayHint)
         {
-            case StateEnum.GamePlayPause:
-                ClosePauseGameUI();
-                return;
-            case StateEnum.ChooseLevel:
-                StartGame();
-                return;
-            case StateEnum.MapEditor:
-                StartGame();
-                return;
+            StartGame();
         }
+        
     }
 
     private void GotoGamePlayPauseAction()
@@ -347,6 +358,18 @@ public class GameManager : MonoBehaviour
         EditorPauseUI.SetActive(true);
     }
 
+    private void GotoGamePlayHintAction()
+    {
+        Time.timeScale = 0;
+        
+        //show hint
+        HintUI.SetActive(true);
+
+        gamePlayHintTitle.text = GlobalParameters.Instance.presentLevel.levelDescription.descriptionTitle;
+        gamePlayHintDescription.text = GlobalParameters.Instance.presentLevel.levelDescription.description;
+        gamePlayHintImage.sprite = GlobalParameters.Instance.presentLevel.levelDescription.thisImage;
+
+    }
 
     
     #endregion
@@ -367,6 +390,17 @@ public class GameManager : MonoBehaviour
         GlobalParameters.Instance.ResetLevel();
         
         StartPlayerComponents();
+
+        if (!levelPreviewList.previewList[selectedLevelIndex].hinted)
+        {
+            if (GlobalParameters.Instance.presentLevel.levelDescription.thisImage != null)
+            {
+                StateButtonAction((int)StateEnum.GamePlayHint);
+                levelPreviewList.previewList[selectedLevelIndex].hinted = true;
+            }
+        }
+            
+            
     }
 
     private void StartPlayerComponents()
@@ -398,9 +432,14 @@ public class GameManager : MonoBehaviour
         GlobalParameters.Instance.EditMode(false);
     }
     
-    public void ClosePauseGameUI()
+    private void ClosePauseGameUI()
     {
         GamePlayPauseUI.SetActive(false);
+    }
+
+    private void CloseHintUI()
+    {
+        HintUI.SetActive(false);
     }
 
     private void ClosePauseEditorUI()
@@ -443,7 +482,6 @@ public class GameManager : MonoBehaviour
             
     }
     
-
 
     public void PlayStarGlowAnimation(GameObject targetObj)
     {
@@ -490,6 +528,8 @@ public class GameManager : MonoBehaviour
         {
             starGlowObj = Instantiate(starGlowPrefab, targetObj.transform.position, quaternion.identity);
         }
+
+        starGlowObj.transform.position = targetObj.transform.position;
         starGlowObj.transform.SetParent(targetObj.transform);
         starGlowObj.SetActive(true);
         yield return starAnimDur;

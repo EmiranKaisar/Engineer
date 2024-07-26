@@ -15,16 +15,33 @@ MonoBehaviour:
   previewList:
   - levelID: 0
     levelName: Destination
+    hinted: 0
     levelType: 0
   - levelID: 1
-    levelName: Move
+    levelName: Jump
+    hinted: 0
     levelType: 0
   - levelID: 2
-    levelName: Rotate
+    levelName: Move
+    hinted: 0
     levelType: 0
   - levelID: 3
-    levelName: Combination
+    levelName: Rotate
+    hinted: 0
     levelType: 0
   - levelID: 4
+    levelName: Combination
+    hinted: 0
+    levelType: 0
+  - levelID: 5
     levelName: Tricky
+    hinted: 0
+    levelType: 0
+  - levelID: 6
+    levelName: Attack
+    hinted: 0
+    levelType: 0
+  - levelID: 7
+    levelName: Killer
+    hinted: 0
     levelType: 0

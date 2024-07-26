@@ -45,10 +45,10 @@ public struct PlayerSpawn
 }
 
 [Serializable]
-public class ToolDescription
+public class LevelDescription
 {
-    public int toolID;
-    public string toolName;
+    public Sprite thisImage;
+    public string descriptionTitle;
     public string description;
 }
 
@@ -74,5 +74,6 @@ public class LevelPreview
     }
     public int levelID;
     public string levelName;
+    public bool hinted = false;
     public int levelType = 0;
 }

@@ -40,8 +40,12 @@ public class BagManager : MonoBehaviour
         int uiItemCount = BagUI.transform.childCount;
         for (int i = 0; i < uiItemCount; i++)
         {
-            BagItemUIList.Add(BagUI.transform.GetChild(i).gameObject);
-            BagItemUIList[i].SetActive(false);
+            if (BagUI.transform.GetChild(i).name != "Title")
+            {
+                BagItemUIList.Add(BagUI.transform.GetChild(i).gameObject);
+                BagItemUIList[i].SetActive(false);
+            }
+            
         }
     }
 

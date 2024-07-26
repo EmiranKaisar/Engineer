@@ -13,6 +13,7 @@ public class ScrollViewManager : MonoBehaviour
             levelIndex = index;
             levelUI = obj;
         }
+
         public int levelIndex;
         public GameObject levelUI;
     }
@@ -20,14 +21,13 @@ public class ScrollViewManager : MonoBehaviour
     private List<LevelObj> levelObjList = new List<LevelObj>();
 
     public GameObject content;
-    
+
     private int previousSelectedObjIndex = -1;
 
-    
 
     private LevelTemplate tempLevel;
-    
-    
+
+
     public void ShowLevel()
     {
         InitScrollView();
@@ -55,12 +55,27 @@ public class ScrollViewManager : MonoBehaviour
 
     private void GetItemObj()
     {
-        levelObjList.Clear();
-        int index = 0;
-        foreach (Transform itemTransform in content.transform)
+        if (levelObjList.Count == 0)
         {
-            levelObjList.Add(new LevelObj(index, itemTransform.gameObject));
-            index++;
+            int index = 0;
+            foreach (Transform itemTransform in content.transform)
+            {
+                levelObjList.Add(new LevelObj(index, itemTransform.gameObject));
+                index++;
+            }
+        }
+        
+        int levelCount = GameManager.Instance.levelPreviewList.previewList.Count;
+        int diff = levelCount - levelObjList.Count;
+
+        if (diff > 0)
+        {
+            int startIndex = levelObjList.Count;
+            for (int i = 0; i < diff; i++)
+            {
+                levelObjList.Add(new LevelObj(startIndex + i,
+                    Instantiate(levelObjList[startIndex - 1].levelUI, content.transform)));
+            }
         }
     }
 
@@ -73,8 +88,6 @@ public class ScrollViewManager : MonoBehaviour
     }
 
 
-
-
     private void AssignAllObjIndex()
     {
         for (int i = 0; i < GameManager.Instance.levelPreviewList.previewList.Count; i++)
@@ -82,7 +95,6 @@ public class ScrollViewManager : MonoBehaviour
             AssignObjIndex(i, i);
             AddButtonListener(i);
         }
-
     }
 
     private void AssignObjIndex(int levelIndex, int objIndex)
@@ -94,31 +106,31 @@ public class ScrollViewManager : MonoBehaviour
     {
         int dataCount = GameManager.Instance.levelPreviewList.previewList.Count;
         int uiObjCount = levelObjList.Count;
-        
+
         for (int i = 0; i < uiObjCount; i++)
         {
-            if(i < dataCount)
-               AssignData(i);
+            if (i < dataCount)
+                AssignData(i);
             else
             {
                 levelObjList[i].levelUI.SetActive(false);
             }
-                
         }
-        
     }
 
     private void AssignData(int objIndex)
     {
         int levelIndex = levelObjList[objIndex].levelIndex;
         levelObjList[objIndex].levelUI.SetActive(true);
-        levelObjList[objIndex].levelUI.GetComponentInChildren<TMP_Text>().text = GameManager.Instance.levelPreviewList.previewList[levelIndex].levelName;
+        levelObjList[objIndex].levelUI.GetComponentInChildren<TMP_Text>().text =
+            GameManager.Instance.levelPreviewList.previewList[levelIndex].levelName;
     }
-    
-    
+
+
     private void AddButtonListener(int objIndex)
     {
-        levelObjList[objIndex].levelUI.GetComponent<Button>().onClick.AddListener(() => PickUIObjButtonAction(objIndex));
+        levelObjList[objIndex].levelUI.GetComponent<Button>().onClick
+            .AddListener(() => PickUIObjButtonAction(objIndex));
     }
 
     private void PickUIObjButtonAction(int objIndex)
@@ -129,12 +141,10 @@ public class ScrollViewManager : MonoBehaviour
             UpdateSelectedAppearance(objIndex);
             GameManager.Instance.SelectLevel(levelIndex);
         }
-        
     }
 
     private void LevelCount()
     {
-        
     }
 
     private void UpdateSelectedAppearance(int index)
@@ -160,23 +170,11 @@ public class ScrollViewManager : MonoBehaviour
             {
                 levelObjList[index].levelUI.GetComponent<Image>().color = Color.white;
             }
-            
         }
     }
 
     private bool CanSelect(int index)
     {
-
         return true;
-        
-    }
-    
-    
-
-    // Update is called once per frame
-    void Update()
-    {
-        //update ui position
-        //checkout "HomeUIManager" in layer demo
     }
 }

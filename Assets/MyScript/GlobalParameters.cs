@@ -19,9 +19,10 @@ public class GlobalParameters : MonoBehaviour
     public float horizontalBound = 13.72f;
 
     public GameObject playerObjs;
+    
     public GameObject levelObjs;
-
     public GameObject levelEditorObjs;
+    
 
     public LevelTemplate presentLevel;
     
@@ -237,19 +238,6 @@ public class GlobalParameters : MonoBehaviour
                 index++;
             }
         }
-        //
-        // for (int i = 0; i < levelEditorObjs.transform.childCount; i++)
-        // {
-        //     if (levelEditorObjs.transform.GetChild(i).CompareTag("Chunk") &&  levelEditorObjs.transform.GetChild(i).gameObject.activeSelf)
-        //     {
-        //         presentLevel.sceneChunkList.Add(new Chunk());
-        //         Debug.Log(i);
-        //         foreach (var item in levelEditorObjs.transform.GetChild(i).GetComponent<ChunkClass>().chunkChildList)
-        //         {
-        //             presentLevel.sceneChunkList[i].chunkPropList.Add(new PropTool((int)item.toolID, (int)item.toolDir, item.stickablObj.transform.position));
-        //         }
-        //     }
-        // }
     }
     
 

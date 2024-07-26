@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Level_3
   m_EditorClassIdentifier: 
   levelID: 3
-  levelName: Combination
+  levelName: Rotate
   playerSpawnList:
-  - {x: -13.5, y: -2.008, z: 0}
+  - {x: -12.13, y: -2.9850001, z: 0}
   sceneChunkList:
   - chunkPropList:
     - toolID: 5
@@ -30,13 +30,13 @@ MonoBehaviour:
   - chunkPropList:
     - toolID: 0
       toolDirection: 0
-      toolPos: {x: -8, y: 4, z: 0}
+      toolPos: {x: -1, y: 0, z: 0}
     - toolID: 2
       toolDirection: 0
-      toolPos: {x: -7, y: 4, z: 0}
+      toolPos: {x: 0, y: 0, z: 0}
     - toolID: 0
       toolDirection: 0
-      toolPos: {x: -6, y: 4, z: 0}
+      toolPos: {x: 1, y: 0, z: 0}
   - chunkPropList:
     - toolID: 4
       toolDirection: 0
@@ -49,5 +49,9 @@ MonoBehaviour:
       toolPos: {x: 13, y: 4, z: 0}
   bagToolList:
   - toolID: 1
-    toolDirection: 1
+    toolDirection: 0
+  levelDescription:
+    thisImage: {fileID: 21300000, guid: 0c82efcde5d364108a6f5c48c6feba72, type: 3}
+    descriptionTitle: Rotate
+    description: 'This spell rotates objects with given direction '
   levelType: 0
