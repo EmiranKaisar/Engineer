@@ -18,12 +18,6 @@ public class PlayerAction : MonoBehaviour
     private bool clingLeftWall;
     
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -34,12 +28,12 @@ public class PlayerAction : MonoBehaviour
             jump = true;
         }
 
-        if (Input.GetKeyDown(KeyCode.F))
+        if (Input.GetKeyDown(KeyCode.S))
         {
             playerController.StampCandidate();
         }
         
-        if (Input.GetKeyDown(KeyCode.G))
+        if (Input.GetKeyDown(KeyCode.W))
         {
             playerController.CollectCandidate();
         }
