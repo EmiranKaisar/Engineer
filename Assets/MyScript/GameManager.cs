@@ -365,9 +365,19 @@ public class GameManager : MonoBehaviour
         //show hint
         HintUI.SetActive(true);
 
-        gamePlayHintTitle.text = GlobalParameters.Instance.presentLevel.levelDescription.descriptionTitle;
-        gamePlayHintDescription.text = GlobalParameters.Instance.presentLevel.levelDescription.description;
-        gamePlayHintImage.sprite = GlobalParameters.Instance.presentLevel.levelDescription.thisImage;
+        if (GlobalParameters.Instance.presentLevel.levelDescription.thisImage != null)
+        {
+            gamePlayHintTitle.text = GlobalParameters.Instance.presentLevel.levelDescription.descriptionTitle;
+            gamePlayHintDescription.text = GlobalParameters.Instance.presentLevel.levelDescription.description;
+            gamePlayHintImage.sprite = GlobalParameters.Instance.presentLevel.levelDescription.thisImage;
+        }
+        else
+        {
+            gamePlayHintTitle.text = "No hint for this level";
+            gamePlayHintDescription.text = "";
+        }
+
+        
 
     }
 

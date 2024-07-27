@@ -138,45 +138,6 @@ public class PlayerController : MonoBehaviour, IAlive
         }
         
 
-        
-        // for (int i = 0; i < faceDetectorList[index].pointDetector.Length; i++)
-        // {
-        //     bool newObj = true;
-        //     int newIndex = 0;
-        //     Vector2 originPos = new Vector2(playerTransform.position.x, playerTransform.position.y) +
-        //                         faceDetectorList[index].pointDetector[i].detectPos;
-        //     Collider2D[] colliders = Physics2D.OverlapCircleAll(originPos, k_DetectorRadius, m_WhatIsGround);
-        //
-        //     if (colliders.Length > 0)
-        //     {
-        //         faceDetectorList[index].collided = true;
-        //
-        //         for (int j = 0; j < colliders.Length; j++)
-        //         {
-        //             if (faceDetectorList[index].pointDetector[i].stickableObj == colliders[j].gameObject)
-        //             {
-        //                 newObj = false;
-        //             }
-        //                 
-        //             
-        //         }
-        //         
-        //         if (newObj)
-        //             faceDetectorList[index].pointDetector[i].stickableObj =
-        //                 colliders[colliders.Length - 1].gameObject;
-        //     }
-        //     else
-        //     {
-        //         faceDetectorList[index].pointDetector[i].stickableObj = null;
-        //     }
-        //
-        // }
-        
-
-        // if (faceDetectorList[index].pointDetector[0].stickableObj ==
-        //     faceDetectorList[index].pointDetector[1].stickableObj && faceDetectorList[index].collided)
-        //     faceDetectorList[index].hasCandidate = true;
-
     }
 
     private void UpdateState()
@@ -307,10 +268,18 @@ public class PlayerController : MonoBehaviour, IAlive
         canJumpOnWall = false;
         if (m_Grounded)
         {
-            if (candidateObj != null && candidateObj.CompareTag("Stickable"))
-                this.transform.position +=
-                    new Vector3(candidateObj.GetComponentInParent<ChunkClass>().accumulatedMove.x * Time.fixedDeltaTime,
-                        0, 0);
+            if (candidateObj != null)
+            {
+                if (candidateObj.CompareTag("Stickable") &&
+                    candidateObj.GetComponentInParent<ChunkClass>() != null)
+                {
+                    this.transform.position +=
+                        new Vector3(candidateObj.GetComponentInParent<ChunkClass>().accumulatedMove.x * Time.fixedDeltaTime,
+                            0, 0);
+                }
+                
+            }
+                
         }else if (faceDetectorList[(int)DetectorEnum.Right].collided && horizontalInput > 0)
         {
             canJumpOnWall = true;
