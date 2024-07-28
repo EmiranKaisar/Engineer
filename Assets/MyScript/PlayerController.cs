@@ -238,16 +238,20 @@ public class PlayerController : MonoBehaviour, IAlive
                 Flip();
             }
         }
+        
+
 
         // If the player should jump...
-        if ((m_Grounded || (m_Walled && canJumpOnWall)) && jump)
+        if ((m_Grounded || (m_Walled && canJumpOnWall)))
         {
-            // Add a vertical force to the player.
-            m_Grounded = false;
-            playerAnimator.SetBool("Jump", true);
-            audioSource.clip = jumpAudio;
-            audioSource.Play();
-            m_Rigidbody2D.AddForce(jumpDirection * m_JumpForce);
+            if (jump)
+            {
+                m_Grounded = false;
+                playerAnimator.SetBool("Jump", true);
+                audioSource.clip = jumpAudio;
+                audioSource.Play();
+                m_Rigidbody2D.AddForce(jumpDirection * m_JumpForce);
+            }
         }
 
         ApplyBound();
@@ -258,6 +262,7 @@ public class PlayerController : MonoBehaviour, IAlive
     {
         playerAnimator.SetBool("Jump", false);
     }
+    
 
     private Vector2 jumpDirection;
     private bool canJumpOnWall;
