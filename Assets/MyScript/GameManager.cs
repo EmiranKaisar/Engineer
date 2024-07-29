@@ -36,7 +36,6 @@ public class GameManager : MonoBehaviour
 
     public List<GameObject> playerList = new List<GameObject>();
 
-    public List<GameObject> killerList = new List<GameObject>();
     public delegate void StateChangeAction();
 
     [Serializable]
@@ -538,7 +537,8 @@ public class GameManager : MonoBehaviour
         {
             starGlowObj = Instantiate(starGlowPrefab, targetObj.transform.position, quaternion.identity);
         }
-
+        
+        starGlowObj.transform.rotation = Quaternion.identity;
         starGlowObj.transform.position = targetObj.transform.position;
         starGlowObj.transform.SetParent(targetObj.transform);
         starGlowObj.SetActive(true);

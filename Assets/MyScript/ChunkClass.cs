@@ -69,7 +69,7 @@ public class ChunkClass : MonoBehaviour
                 SpriteManager.Instance.ReturnToolSprite((int)item.toolID);
             GlobalMethod.OperateUIDirection(item.stickablObj, (int)item.toolDir);
             UpdateStickState(item);
-
+            item.stickablObj.GetComponent<SpriteRenderer>().color = new Color(0.8f, 0.8f, 0.8f, 1);
             if (item.toolID == ToolEnum.Killer)
             {
                 if(this.gameObject.GetComponent<KillerController>() == null)
@@ -104,8 +104,7 @@ public class ChunkClass : MonoBehaviour
     private bool StickToolByIndex(int index)
     {
         BagTool selectedTool = BagManager.Instance.PresentSelectedBagTool();
-        
-        if (index >= 0 && !inRotateProcedure)
+        if (index >= 0 && !inRotateProcedure && selectedTool.toolID != ToolEnum.Trap)
         {
             if (!chunkChildList[index].sticked)
             {

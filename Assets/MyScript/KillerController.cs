@@ -122,8 +122,6 @@ public class KillerController : MonoBehaviour, IAlive
 
     public void GotAttacked()
     {
-        Debug.Log("killer die");
-
         gameObject.SetActive(false);
     }
 }

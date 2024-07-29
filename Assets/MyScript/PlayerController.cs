@@ -70,7 +70,6 @@ public class PlayerController : MonoBehaviour, IAlive
     private Transform playerTransform;
     
 
-
     private void Awake()
     {
         m_Rigidbody2D = GetComponent<Rigidbody2D>();
@@ -147,6 +146,7 @@ public class PlayerController : MonoBehaviour, IAlive
                    faceDetectorList[(int)DetectorEnum.Left].collided;
     }
 
+    
     private void AssignCandidate(float move)
     {
         if (move > 0 && faceDetectorList[(int)DetectorEnum.Right].hasCandidate)
@@ -162,6 +162,10 @@ public class PlayerController : MonoBehaviour, IAlive
         {
             candidateObj = faceDetectorList[(int)DetectorEnum.Bottom].pointDetector[0].stickableObj;
         }
+        else
+        {
+            candidateObj = null;
+        }
         
 
         if (candidateObj != null)
@@ -169,16 +173,16 @@ public class PlayerController : MonoBehaviour, IAlive
             candidateObj.GetComponentInParent<ChunkClass>()?.CheckTrap(candidateObj, this.gameObject);
             if (candidateObj != previousCandidateObj)
             {
-                candidateObj.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, .7f);
+                candidateObj.GetComponent<SpriteRenderer>().color = Color.white;
                 if (previousCandidateObj != null)
-                    previousCandidateObj.GetComponent<SpriteRenderer>().color = Color.white;
+                    previousCandidateObj.GetComponent<SpriteRenderer>().color = new Color(0.8f, 0.8f, 0.8f, 1);
                 previousCandidateObj = candidateObj;
             }
         }
         else
         {
             if (previousCandidateObj != null)
-                previousCandidateObj.GetComponent<SpriteRenderer>().color = Color.white;
+                previousCandidateObj.GetComponent<SpriteRenderer>().color = new Color(0.8f, 0.8f, 0.8f, 1);
         }
     }
 
@@ -273,41 +277,61 @@ public class PlayerController : MonoBehaviour, IAlive
         canJumpOnWall = false;
         if (m_Grounded)
         {
-            if (candidateObj != null)
-            {
-                if (candidateObj.CompareTag("Stickable") &&
-                    candidateObj.GetComponentInParent<ChunkClass>() != null)
-                {
-                    this.transform.position +=
-                        new Vector3(candidateObj.GetComponentInParent<ChunkClass>().accumulatedMove.x * Time.fixedDeltaTime,
-                            0, 0);
-                }
-                
-            }
-                
+            PropAffectedHorizontalMovement(DetectorEnum.Bottom);
+            PropAffectedJumpDir(DetectorEnum.Bottom);
         }else if (faceDetectorList[(int)DetectorEnum.Right].collided && horizontalInput > 0)
         {
             canJumpOnWall = true;
-            this.transform.position +=
-                new Vector3(
-                    candidateObj.GetComponentInParent<ChunkClass>().accumulatedMove.x * Time.fixedDeltaTime,
-                    0, 0);
-            if(m_Rigidbody2D.velocity.y <= 0)
-               m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, -2);
-            jumpDirection = new Vector2(Mathf.Cos(Mathf.PI - jumpRadiance),
-                Mathf.Sin(Mathf.PI - jumpRadiance))*1.3f;
+            PropAffectedHorizontalMovement(DetectorEnum.Right);
+            PropAffectedJumpDir(DetectorEnum.Right);
+            SlideOnWall();
+            
         }else if (faceDetectorList[(int)DetectorEnum.Left].collided && horizontalInput < 0)
         {
             canJumpOnWall = true;
-            this.transform.position +=
-                new Vector3(
-                    candidateObj.GetComponentInParent<ChunkClass>().accumulatedMove.x * Time.fixedDeltaTime,
-                    0, 0);
-            if(m_Rigidbody2D.velocity.y <= 0)
-               m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, -2);
-            jumpDirection = new Vector2(Mathf.Cos(jumpRadiance),
-                Mathf.Sin(jumpRadiance))*1.3f;
+            PropAffectedHorizontalMovement(DetectorEnum.Left);
+            PropAffectedJumpDir(DetectorEnum.Left);
+            SlideOnWall();
         }
+    }
+
+    private void PropAffectedHorizontalMovement(DetectorEnum detector)
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            if (faceDetectorList[(int)detector].pointDetector[i].stickableObj != null)
+            {
+                this.transform.position +=
+                    new Vector3(
+                        faceDetectorList[(int)detector].pointDetector[i].stickableObj.GetComponentInParent<ChunkClass>().accumulatedMove.x * Time.fixedDeltaTime,
+                        0, 0);
+                break;
+            }
+        }
+    }
+
+    private void PropAffectedJumpDir(DetectorEnum detector)
+    {
+        switch (detector)
+        {
+            case DetectorEnum.Bottom:
+                jumpDirection = new Vector2(0, 1);
+                break;
+            case DetectorEnum.Right:
+                jumpDirection = new Vector2(Mathf.Cos(Mathf.PI - jumpRadiance),
+                    Mathf.Sin(Mathf.PI - jumpRadiance))*1.3f;
+                break;
+            case DetectorEnum.Left:
+                jumpDirection = new Vector2(Mathf.Cos(jumpRadiance),
+                    Mathf.Sin(jumpRadiance))*1.3f;
+                break;
+        }
+    }
+
+    private void SlideOnWall()
+    {
+        if(m_Rigidbody2D.velocity.y <= 0)
+            m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, -2);
     }
 
     public void GotAttacked()
@@ -371,16 +395,7 @@ public class PlayerController : MonoBehaviour, IAlive
             PlayerDie();
         }
     }
-
-    private WaitForSeconds dieDur = new WaitForSeconds(0.4f);
-    private IEnumerator dieProcedure;
-
-    private IEnumerator DieProcedure()
-    {
-        yield return dieDur;
-        GameManager.Instance.SetResult(playerIndex, false);
-    }
-
+    
     private void ApplyGravity()
     {
         m_Rigidbody2D.AddForce(new Vector2(0f, -gravity));
@@ -395,4 +410,17 @@ public class PlayerController : MonoBehaviour, IAlive
         // Multiply the player's x local scale by -1.
         this.transform.rotation *= Quaternion.AngleAxis(180, Vector3.up);
     }
+    
+    
+
+    private WaitForSeconds dieDur = new WaitForSeconds(0.4f);
+    private IEnumerator dieProcedure;
+
+    private IEnumerator DieProcedure()
+    {
+        yield return dieDur;
+        GameManager.Instance.SetResult(playerIndex, false);
+    }
+
+
 }

@@ -25,6 +25,8 @@ public class GlobalParameters : MonoBehaviour
     
 
     public LevelTemplate presentLevel;
+
+    private int orderInLayer = 0;
     
     public class ChunkObjPool
     {
@@ -249,19 +251,30 @@ public class GlobalParameters : MonoBehaviour
     //call this after this level is set up
     public void ResetLevel()
     {
-        SetPlayerSpawnPosList();
+        orderInLayer = 0;
+        
         SetPropInfo();
+        SetPlayerInfo();
         SetBagToolInfo();
     }
 
-    private void SetPlayerSpawnPosList()
+    private void SetPlayerInfo()
     {
         int index = 0;
 
         foreach (var playerSpawn in presentLevel.playerSpawnList)
         {
-            if(index < GameManager.Instance.playerList.Count)
-               GameManager.Instance.playerList[index].transform.position = playerSpawn;
+            if (index < GameManager.Instance.playerList.Count)
+            {
+                GameManager.Instance.playerList[index].transform.position = playerSpawn;
+                GameManager.Instance.playerList[index].GetComponent<SpriteRenderer>().sortingOrder = orderInLayer;
+                orderInLayer++;
+            }
+            else
+            {
+                break;
+            }
+               
             
             index++;
         }
@@ -288,7 +301,10 @@ public class GlobalParameters : MonoBehaviour
                 chunkClass.chunkChildList.Add(new ChunkClass.StickableClass(toolStruct.toolID, toolStruct.toolDirection, toolObj));
                 chunkClass.InitChunk();
                 GlobalMethod.OperateUIDirection(toolObj, toolStruct.toolDirection);
+                toolObj.GetComponent<SpriteRenderer>().sortingOrder = orderInLayer;
             }
+
+            orderInLayer++;
         }
     }
 
@@ -302,6 +318,7 @@ public class GlobalParameters : MonoBehaviour
         
         BagManager.Instance.InitBag();
     }
+    
     
 
     #endregion
