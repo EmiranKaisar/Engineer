@@ -12,11 +12,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] public List<BagTool> toolStoreList;
 
     public GameObject starGlowPrefab;
-    
+
     public LevelPreviewList levelPreviewList;
 
     public float levelTime;
-    
+
     public struct LevelResult
     {
         public LevelResult(int index, bool success, float dur)
@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
             playerSuccess = success;
             timeDur = dur;
         }
+
         public int playerIndex;
         public bool playerSuccess;
         public float timeDur;
@@ -51,6 +52,8 @@ public class GameManager : MonoBehaviour
     private int homeIndex = 0;
     private int presentStateIndex = 0;
     private int previousStateIndex = 0;
+
+    #region Supplementary UI
     
     private GameObject GamePlayPauseUI;
     private GameObject EditorPauseUI;
@@ -67,8 +70,11 @@ public class GameManager : MonoBehaviour
     private TMP_Text gamePlayPauseTitle;
     private TMP_Text gamePlayPausePlayerName;
     private TMP_Text gamePlayPauseTime;
-
+    
     private TMP_Text levelNameText;
+
+    #endregion
+
 
     private int selectedLevelIndex = 0;
 
@@ -83,13 +89,23 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
-        
+
         DontDestroyOnLoad(Instance);
         CheckState();
-        
+
         InitGame();
     }
 
+    // Update is called once per frame
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape) && StateList[presentStateIndex].ThisState == StateEnum.GamePlay)
+        {
+            StateButtonAction((int)StateEnum.GamePlayPause);
+        }
+    }
+
+    #region Init
     private void CheckState()
     {
         bool allRight = true;
@@ -102,9 +118,7 @@ public class GameManager : MonoBehaviour
                 allRight = false;
                 Debug.Log("State " + StateList[i].ThisState + "is not in right position");
             }
-            
         }
-
     }
 
     private void AssignObj(int index)
@@ -170,7 +184,7 @@ public class GameManager : MonoBehaviour
         gamePlayHintImage = HintUI.transform.Find("Image").GetComponent<Image>();
         HintUI.SetActive(false);
     }
-    
+
     private void AssignGamePlayPauseUI(int index)
     {
         GamePlayPauseUI = StateList[index].UIObj.transform.Find("PauseUI").gameObject;
@@ -199,6 +213,9 @@ public class GameManager : MonoBehaviour
         ShowUI(homeIndex);
     }
 
+    #endregion
+
+    #region Change state
 
     //根据玩家的输入跳转到对应的游戏状态
     public void StateButtonAction(int actionIndex)
@@ -213,7 +230,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
+    //更新状态
     private void UpdateState()
     {
         if (StateList[presentStateIndex].UIObj != StateList[previousStateIndex].UIObj)
@@ -221,12 +238,11 @@ public class GameManager : MonoBehaviour
             HideUI(previousStateIndex);
             ShowUI(presentStateIndex);
         }
-        
-        StateList[presentStateIndex].stateAction?.Invoke();
 
+        StateList[presentStateIndex].stateAction?.Invoke();
     }
 
-
+    //隐藏对应UI
     private void HideUI(int _index)
     {
         StateList[_index].UIObj.SetActive(false);
@@ -238,60 +254,50 @@ public class GameManager : MonoBehaviour
         StateList[_index].UIObj.SetActive(true);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape) && StateList[presentStateIndex].ThisState == StateEnum.GamePlay)
-        {
-            StateButtonAction((int)StateEnum.GamePlayPause);
-        }
-    }
-
+    #endregion
 
     #region State Actions
 
     private void GotoHomeAction()
     {
-
     }
 
     private void GotoChoosePlayerAction()
     {
-        
     }
 
     private void GotoChooseLevelAction()
     {
         EditorButtonsObj.SetActive(false);
         GameButtonsObj.SetActive(true);
-        
+
         selectedLevelIndex = 0;
 
         GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
-        
+
         //load local level data
         LevelScrollView.GetComponent<ScrollViewManager>().ShowLevel();
     }
-    
+
     private void GotoGamePlayAction()
     {
         Time.timeScale = 1;
-        ClosePauseGameUI();
-        CloseHintUI();
-        if(starGlowObj != null)
+        GamePlayPauseUI.SetActive(false);
+        HintUI.SetActive(false);
+        if (starGlowObj != null)
             starGlowObj.SetActive(false);
 
-        if (StateList[previousStateIndex].ThisState != StateEnum.GamePlayPause && StateList[previousStateIndex].ThisState != StateEnum.GamePlayHint)
+        if (StateList[previousStateIndex].ThisState != StateEnum.GamePlayPause &&
+            StateList[previousStateIndex].ThisState != StateEnum.GamePlayHint)
         {
             StartGame();
         }
-        
     }
 
     private void GotoGamePlayPauseAction()
     {
         Time.timeScale = 0;
-        
+
         GamePlayPauseUI.SetActive(true);
 
         if (gotResult)
@@ -315,34 +321,32 @@ public class GameManager : MonoBehaviour
             gamePlayPausePlayerName.text = "";
             gamePlayPauseTime.text = "";
         }
-
-
     }
 
     private void GotoChooseEditorLevelAction()
     {
+        //hide and show UI
         EditorButtonsObj.SetActive(true);
         GameButtonsObj.SetActive(false);
-        
 
+        //load level data
         selectedLevelIndex = 0;
-        
         GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
-        
-        //load local level data
+
+        //load level preview list for scroll view
         LevelScrollView.GetComponent<ScrollViewManager>().ShowLevel();
+
+        if (StateList[previousStateIndex].ThisState == StateEnum.MapEditor)
+            ConfirmExistEditor();
     }
 
     private void GotoMapEditorAction()
     {
+        EditorPauseUI.SetActive(false);
         switch (StateList[previousStateIndex].ThisState)
         {
             case StateEnum.ChooseEditorLevel:
-                ClosePauseEditorUI();
                 StartEditor();
-                return;
-            case StateEnum.MapEditorPause:
-                ClosePauseEditorUI();
                 return;
         }
     }
@@ -360,7 +364,7 @@ public class GameManager : MonoBehaviour
     private void GotoGamePlayHintAction()
     {
         Time.timeScale = 0;
-        
+
         //show hint
         HintUI.SetActive(true);
 
@@ -375,29 +379,27 @@ public class GameManager : MonoBehaviour
             gamePlayHintTitle.text = "No hint for this level";
             gamePlayHintDescription.text = "";
         }
-
-        
-
     }
 
-    
     #endregion
+
+    #region Supplementary state change action
 
     public void StartGame()
     {
         //start the game from the beginning
         gotResult = false;
-        if(GlobalParameters.Instance.presentLevel.levelID != selectedLevelIndex)
-             GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
-        
-        
+        if (GlobalParameters.Instance.presentLevel.levelID != selectedLevelIndex)
+            GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
+
+
         GlobalParameters.Instance.EditMode(false);
-        
+
         BagManager.Instance.BagUI.transform.SetParent(StateList[(int)StateEnum.GamePlay].UIObj.transform);
-        
-        
+
+
         GlobalParameters.Instance.ResetLevel();
-        
+
         StartPlayerComponents();
 
         if (!levelPreviewList.previewList[selectedLevelIndex].hinted)
@@ -408,8 +410,6 @@ public class GameManager : MonoBehaviour
                 levelPreviewList.previewList[selectedLevelIndex].hinted = true;
             }
         }
-            
-            
     }
 
     private void StartPlayerComponents()
@@ -424,41 +424,21 @@ public class GameManager : MonoBehaviour
     {
         //update selected level id before this
         Time.timeScale = 0;
-        
-        if(GlobalParameters.Instance.presentLevel.levelID != selectedLevelIndex)
+
+        if (GlobalParameters.Instance.presentLevel.levelID != selectedLevelIndex)
             GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
 
         levelNameText.text = GlobalParameters.Instance.presentLevel.levelName;
 
-        
+
         GlobalParameters.Instance.EditMode(true);
-        
+
         BagManager.Instance.BagUI.transform.SetParent(StateList[(int)StateEnum.MapEditor].UIObj.transform);
     }
 
-    public void ConfirmExistEditor()
+    private void ConfirmExistEditor()
     {
         GlobalParameters.Instance.EditMode(false);
-    }
-    
-    private void ClosePauseGameUI()
-    {
-        GamePlayPauseUI.SetActive(false);
-    }
-
-    private void CloseHintUI()
-    {
-        HintUI.SetActive(false);
-    }
-
-    private void ClosePauseEditorUI()
-    {
-        EditorPauseUI.SetActive(false);
-    }
-
-    public void SelectLevel(int index)
-    {
-        selectedLevelIndex = index;
     }
 
     public void SaveLevelInfo()
@@ -488,19 +468,12 @@ public class GameManager : MonoBehaviour
             //exit game
             StateButtonAction(2);
         }
-            
     }
-    
 
-    public void PlayStarGlowAnimation(GameObject targetObj)
-    {
-        if(starAnimation != null)
-            StopCoroutine(starAnimation);
-        starAnimation = StarAnimation(targetObj);
-        StartCoroutine(starAnimation);
-    }
+    #endregion
     
-    
+    #region API
+
     public void SetResult(int playerIndex, bool success)
     {
         presentLevelResult = new LevelResult(playerIndex, success, levelTime);
@@ -511,10 +484,20 @@ public class GameManager : MonoBehaviour
         {
             StateButtonAction((int)StateEnum.GamePlayPause);
         }
-        
     }
 
-    #region API
+    public void SelectLevel(int index)
+    {
+        selectedLevelIndex = index;
+    }
+
+    public void PlayStarGlowAnimation(GameObject targetObj)
+    {
+        if (starAnimation != null)
+            StopCoroutine(starAnimation);
+        starAnimation = StarAnimation(targetObj);
+        StartCoroutine(starAnimation);
+    }
 
 
     public StateEnum PresentState()
@@ -523,7 +506,6 @@ public class GameManager : MonoBehaviour
     }
 
     #endregion
-    
 
     #region Animation
 
@@ -531,23 +513,21 @@ public class GameManager : MonoBehaviour
     private WaitForSeconds starAnimDur = new WaitForSeconds(0.4f);
     private GameObject starGlowObj;
     private IEnumerator starAnimation;
+
     private IEnumerator StarAnimation(GameObject targetObj)
     {
         if (starGlowObj == null)
         {
             starGlowObj = Instantiate(starGlowPrefab, targetObj.transform.position, quaternion.identity);
         }
-        
+
         starGlowObj.transform.rotation = Quaternion.identity;
         starGlowObj.transform.position = targetObj.transform.position;
         starGlowObj.transform.SetParent(targetObj.transform);
         starGlowObj.SetActive(true);
         yield return starAnimDur;
         StateButtonAction((int)StateEnum.GamePlayPause);
-        
     }
 
     #endregion
-
-
 }

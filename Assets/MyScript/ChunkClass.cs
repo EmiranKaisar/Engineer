@@ -50,6 +50,9 @@ public class ChunkClass : MonoBehaviour
         //init centre
         InitCentre();
     }
+
+
+    #region Init
     
     public void InitChunk()
     {
@@ -59,7 +62,8 @@ public class ChunkClass : MonoBehaviour
         //init centre
         InitCentre();
     }
-
+    
+    
     private void InitProp()
     {
         chunkTransform = this.transform;
@@ -93,7 +97,8 @@ public class ChunkClass : MonoBehaviour
         MoveChunkToCentre();
         CalculatePresentKinematic();
     }
-
+    
+    #endregion
 
     #region Tools
     public bool StickTool(GameObject obj)
@@ -333,6 +338,7 @@ public class ChunkClass : MonoBehaviour
     
     #endregion
 
+    #region Attack functionality
     private void UpdateAttack()
     {
         if (!inRotateProcedure)
@@ -374,8 +380,10 @@ public class ChunkClass : MonoBehaviour
 
             posIndex++;
         }
-
     }
+    
+
+    #endregion
     
     
     #region Coroutine

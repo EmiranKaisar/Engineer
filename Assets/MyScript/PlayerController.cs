@@ -47,15 +47,6 @@ public class PlayerController : MonoBehaviour, IAlive
 
     private float jumpRadiance = Mathf.PI / 3;
 
-    [Header("Events")] [Space] public UnityEvent OnLandEvent;
-
-    [System.Serializable]
-    public class BoolEvent : UnityEvent<bool>
-    {
-    }
-
-    public BoolEvent OnCrouchEvent;
-
     private GameObject candidateObj;
     private GameObject previousCandidateObj;
 
@@ -69,6 +60,9 @@ public class PlayerController : MonoBehaviour, IAlive
 
     private Transform playerTransform;
     
+    private Vector2 jumpDirection;
+    private bool canJumpOnWall;
+    
 
     private void Awake()
     {
@@ -76,12 +70,6 @@ public class PlayerController : MonoBehaviour, IAlive
         playerAnimator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
         playerTransform = transform;
-
-        if (OnLandEvent == null)
-            OnLandEvent = new UnityEvent();
-
-        if (OnCrouchEvent == null)
-            OnCrouchEvent = new BoolEvent();
     }
 
     private void FixedUpdate()
@@ -89,6 +77,8 @@ public class PlayerController : MonoBehaviour, IAlive
         CheckCollision();
         UpdateState();
     }
+
+    #region Detection
 
     private void CheckCollision()
     {
@@ -145,7 +135,6 @@ public class PlayerController : MonoBehaviour, IAlive
         m_Walled = faceDetectorList[(int)DetectorEnum.Right].collided ||
                    faceDetectorList[(int)DetectorEnum.Left].collided;
     }
-
     
     private void AssignCandidate(float move)
     {
@@ -187,6 +176,11 @@ public class PlayerController : MonoBehaviour, IAlive
         }
     }
 
+    #endregion
+
+
+    #region Player action API
+
     public void StampCandidate()
     {
         if (candidateObj != null && (m_Grounded || m_Walled))
@@ -211,7 +205,6 @@ public class PlayerController : MonoBehaviour, IAlive
             candidateObj.GetComponentInParent<ChunkClass>().CollectTool(candidateObj);
         }
     }
-
 
     public void Move(float move, bool crouch, bool jump)
     {
@@ -262,15 +255,11 @@ public class PlayerController : MonoBehaviour, IAlive
         ApplyBound();
         ApplyGravity();
     }
-
-    public void AfterJumpAnim()
-    {
-        playerAnimator.SetBool("Jump", false);
-    }
     
+    #endregion
 
-    private Vector2 jumpDirection;
-    private bool canJumpOnWall;
+
+    #region Prop affected movement
 
     private void PropAffectedMove(float horizontalInput)
     {
@@ -302,7 +291,7 @@ public class PlayerController : MonoBehaviour, IAlive
         {
             if (faceDetectorList[(int)detector].pointDetector[i].stickableObj != null)
             {
-                this.transform.position +=
+                playerTransform.position +=
                     new Vector3(
                         faceDetectorList[(int)detector].pointDetector[i].stickableObj.GetComponentInParent<ChunkClass>().accumulatedMove.x * Time.fixedDeltaTime,
                         0, 0);
@@ -334,7 +323,63 @@ public class PlayerController : MonoBehaviour, IAlive
         if(m_Rigidbody2D.velocity.y <= 0)
             m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, -2);
     }
+    
+    private void ApplyBound()
+    {
+        if (playerTransform.position.x >= GlobalParameters.Instance.horizontalBound && m_Rigidbody2D.velocity.x >= 0)
+        {
+            m_Rigidbody2D.velocity = new Vector2(0, m_Rigidbody2D.velocity.y);
+            playerTransform.position = new Vector2(GlobalParameters.Instance.horizontalBound, playerTransform.position.y);
+        }
 
+
+        if (playerTransform.position.x <= -GlobalParameters.Instance.horizontalBound && m_Rigidbody2D.velocity.x <= 0)
+        {
+            m_Rigidbody2D.velocity = new Vector2(0, m_Rigidbody2D.velocity.y);
+            playerTransform.position =
+                new Vector2(-GlobalParameters.Instance.horizontalBound, playerTransform.position.y);
+        }
+
+
+        if (playerTransform.position.y >= GlobalParameters.Instance.verticalBound && m_Rigidbody2D.velocity.y >= 0)
+        {
+            m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, 0);
+            playerTransform.position = new Vector2(playerTransform.position.x, GlobalParameters.Instance.verticalBound);
+        }
+
+
+        if (playerTransform.position.y <= -GlobalParameters.Instance.verticalBound && m_Rigidbody2D.velocity.y <= 0)
+        {
+            m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, 0);
+            playerTransform.position = new Vector2(playerTransform.position.x, -GlobalParameters.Instance.verticalBound);
+            PlayerDie();
+        }
+    }
+    
+    #endregion
+
+    
+    public void AfterJumpAnim()
+    {
+        playerAnimator.SetBool("Jump", false);
+    }
+    
+    private void ApplyGravity()
+    {
+        m_Rigidbody2D.AddForce(new Vector2(0f, -gravity));
+    }
+    
+    private void Flip()
+    {
+        // Switch the way the player is labelled as facing.
+        m_FacingRight = !m_FacingRight;
+
+        // Multiply the player's x local scale by -1.
+        playerTransform.rotation *= Quaternion.AngleAxis(180, Vector3.up);
+    }
+
+
+    #region Alive & Death
     public void GotAttacked()
     {
         PlayerDie();
@@ -363,57 +408,7 @@ public class PlayerController : MonoBehaviour, IAlive
         this.GetComponent<BoxCollider2D>().enabled = true;
         this.GetComponent<PlayerAction>().enabled = true;
     }
-
-
-    private void ApplyBound()
-    {
-        if (this.transform.position.x >= GlobalParameters.Instance.horizontalBound && m_Rigidbody2D.velocity.x >= 0)
-        {
-            m_Rigidbody2D.velocity = new Vector2(0, m_Rigidbody2D.velocity.y);
-            this.transform.position = new Vector2(GlobalParameters.Instance.horizontalBound, this.transform.position.y);
-        }
-
-
-        if (this.transform.position.x <= -GlobalParameters.Instance.horizontalBound && m_Rigidbody2D.velocity.x <= 0)
-        {
-            m_Rigidbody2D.velocity = new Vector2(0, m_Rigidbody2D.velocity.y);
-            this.transform.position =
-                new Vector2(-GlobalParameters.Instance.horizontalBound, this.transform.position.y);
-        }
-
-
-        if (this.transform.position.y >= GlobalParameters.Instance.verticalBound && m_Rigidbody2D.velocity.y >= 0)
-        {
-            m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, 0);
-            this.transform.position = new Vector2(this.transform.position.x, GlobalParameters.Instance.verticalBound);
-        }
-
-
-        if (this.transform.position.y <= -GlobalParameters.Instance.verticalBound && m_Rigidbody2D.velocity.y <= 0)
-        {
-            m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, 0);
-            this.transform.position = new Vector2(this.transform.position.x, -GlobalParameters.Instance.verticalBound);
-            PlayerDie();
-        }
-    }
     
-    private void ApplyGravity()
-    {
-        m_Rigidbody2D.AddForce(new Vector2(0f, -gravity));
-    }
-
-
-    private void Flip()
-    {
-        // Switch the way the player is labelled as facing.
-        m_FacingRight = !m_FacingRight;
-
-        // Multiply the player's x local scale by -1.
-        this.transform.rotation *= Quaternion.AngleAxis(180, Vector3.up);
-    }
-    
-    
-
     private WaitForSeconds dieDur = new WaitForSeconds(0.4f);
     private IEnumerator dieProcedure;
 
@@ -422,6 +417,11 @@ public class PlayerController : MonoBehaviour, IAlive
         yield return dieDur;
         GameManager.Instance.SetResult(playerIndex, false);
     }
+
+
+    #endregion
+    
+
 
 
 }

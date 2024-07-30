@@ -46,6 +46,15 @@ public enum DetectorEnum
     Left,
 }
 
+public enum SoundEnum
+{
+    BGM,
+    PlayerJump,
+    PlayerStick,
+    PlayerCollect,
+    StarGlow,
+}
+
 
 public enum LevelType
 {

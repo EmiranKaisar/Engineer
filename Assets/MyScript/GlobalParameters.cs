@@ -161,6 +161,7 @@ public class GlobalParameters : MonoBehaviour
         }
     }
     
+    
     ChunkObjPool chunkObjPool = new ChunkObjPool();
     StickableObjPool stickableObjPool = new StickableObjPool();
 
@@ -328,7 +329,6 @@ public class GlobalParameters : MonoBehaviour
         if (editMode)
         {
             levelEditorObjs.SetActive(true);
-
             levelObjs.SetActive(false);
         }
         else
