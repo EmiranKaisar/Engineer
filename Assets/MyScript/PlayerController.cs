@@ -183,6 +183,8 @@ public class PlayerController : MonoBehaviour, IAlive
         {
             if (previousCandidateObj != null)
                 previousCandidateObj.GetComponent<SpriteRenderer>().color = new Color(0.8f, 0.8f, 0.8f, 1);
+
+            previousCandidateObj = null;
         }
     }
 
