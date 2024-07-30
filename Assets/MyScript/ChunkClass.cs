@@ -105,7 +105,7 @@ public class ChunkClass : MonoBehaviour
     private bool StickToolByIndex(int index)
     {
         BagTool selectedTool = BagManager.Instance.PresentSelectedBagTool();
-        if (index >= 0 && !inRotateProcedure && selectedTool.toolID != ToolEnum.Trap)
+        if (index >= 0 && !inRotateProcedure && selectedTool.toolID != ToolEnum.Block)
         {
             if (!chunkChildList[index].sticked)
             {
@@ -166,50 +166,11 @@ public class ChunkClass : MonoBehaviour
     {
         chunkChildList[index].stickablObj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)toolID);
     }
-
-    #region Check trap
-
-    public void CheckTrap(GameObject obj, GameObject player)
-    {
-        int index = ReturnIndexByObj(obj);
-        if (index >= 0 && !inRotateProcedure)
-        {
-            if (chunkChildList[index].toolID == ToolEnum.Trap)
-            {
-                TrapFunction(index, player);
-            }
-        }
-    }
-
-    private void TrapFunction(int index, GameObject player)
-    {
-        if (BagManager.Instance.currentBagList.Count > 0)
-        {
-            StickToolByIndex(index);
-        }
-        else
-        {
-            StickPlayer(index, player);
-        }
-    }
-    
-    private void StickPlayer(int index, GameObject player)
-    {
-        chunkChildList[index].sticked = false;
-        chunkChildList[index].toolID = ToolEnum.Corpse;
-        chunkChildList[index].toolDir = ToolDirection.Original;
-        if(stickPlayerAnim != null)
-            StopCoroutine(stickPlayerAnim);
-        stickPlayerAnim = StickPlayerAnim(player, index);
-        StartCoroutine(stickPlayerAnim);
-    }
-
-    #endregion
     
 
     private void UpdateStickState(StickableClass item)
     {
-        if (item.toolID == ToolEnum.Block || item.toolID == ToolEnum.Trap || item.toolID == ToolEnum.Corpse)
+        if (item.toolID == ToolEnum.Block || item.toolID == ToolEnum.Corpse)
         {
             item.sticked = false;
         }

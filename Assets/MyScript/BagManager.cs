@@ -98,7 +98,7 @@ public class BagManager : MonoBehaviour
             return currentBagList[0];
         else
         {
-            return new BagTool(ToolEnum.Trap, ToolDirection.Original);
+            return new BagTool(ToolEnum.Block, ToolDirection.Original);
         }
     }
 

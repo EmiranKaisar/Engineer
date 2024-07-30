@@ -170,7 +170,6 @@ public class PlayerController : MonoBehaviour, IAlive
 
         if (candidateObj != null)
         {
-            candidateObj.GetComponentInParent<ChunkClass>()?.CheckTrap(candidateObj, this.gameObject);
             if (candidateObj != previousCandidateObj)
             {
                 candidateObj.GetComponent<SpriteRenderer>().color = Color.white;

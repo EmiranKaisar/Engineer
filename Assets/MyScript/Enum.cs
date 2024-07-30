@@ -7,7 +7,7 @@ public enum ToolEnum
     Block,
     Move,
     Rotate,
-    Trap,
+    Trap, //abandoned
     Star,
     Destination,
     Corpse,
