@@ -46,9 +46,8 @@ public enum DetectorEnum
     Left,
 }
 
-public enum SoundEnum
+public enum PlayerAudioEnum
 {
-    BGM,
     PlayerJump,
     PlayerStick,
     PlayerCollect,

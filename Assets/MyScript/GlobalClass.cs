@@ -77,3 +77,20 @@ public class LevelPreview
     public bool hinted = false;
     public int levelType = 0;
 }
+
+[Serializable]
+public class LevelResult
+{
+    public bool hinted;
+    public bool hasPassed;
+    public float timeDur;
+    public int operationCount;
+}
+
+[Serializable]
+public class Progress
+{
+    public int slot;
+    public List<LevelResult> levelResultlist;
+    public string lastPlayDate;
+}

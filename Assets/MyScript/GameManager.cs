@@ -15,27 +15,27 @@ public class GameManager : MonoBehaviour
 
     public LevelPreviewList levelPreviewList;
 
+    #region Level Result
     public float levelTime;
 
-    public struct LevelResult
+    public class PlayerResultClass
     {
-        public LevelResult(int index, bool success, float dur)
+        public PlayerResultClass(bool success, int count)
         {
-            playerIndex = index;
-            playerSuccess = success;
-            timeDur = dur;
+            PlayerSuccess = success;
+            OperationCount = count;
         }
-
-        public int playerIndex;
-        public bool playerSuccess;
-        public float timeDur;
+        public bool PlayerSuccess;
+        public int OperationCount;
     }
 
-    public LevelResult presentLevelResult;
+    private List<PlayerResultClass> playerResultList = new List<PlayerResultClass>();
 
     private bool gotResult = false;
+    #endregion
 
     public List<GameObject> playerList = new List<GameObject>();
+    
 
     public delegate void StateChangeAction();
 
@@ -48,6 +48,8 @@ public class GameManager : MonoBehaviour
     }
 
     [SerializeField] public List<StateClass> StateList;
+
+    private bool gotPaused = false;
 
     private int homeIndex = 0;
     private int presentStateIndex = 0;
@@ -99,6 +101,9 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(!gotPaused)
+           levelTime += Time.deltaTime;
+        
         if (Input.GetKeyDown(KeyCode.Escape) && StateList[presentStateIndex].ThisState == StateEnum.GamePlay)
         {
             StateButtonAction((int)StateEnum.GamePlayPause);
@@ -108,14 +113,12 @@ public class GameManager : MonoBehaviour
     #region Init
     private void CheckState()
     {
-        bool allRight = true;
         for (int i = 0; i < StateList.Count; i++)
         {
             AssignObj(i);
             AssignAction(i);
             if ((StateEnum)i != StateList[i].ThisState)
             {
-                allRight = false;
                 Debug.Log("State " + StateList[i].ThisState + "is not in right position");
             }
         }
@@ -198,6 +201,7 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 0;
         InitUI();
+        InitPlayerResultList();
     }
 
     private void InitUI()
@@ -212,6 +216,16 @@ public class GameManager : MonoBehaviour
 
         ShowUI(homeIndex);
     }
+    
+    private void InitPlayerResultList()
+    {
+        playerResultList.Clear();
+        for (int i = 0; i < 4; i++)
+        {
+            playerResultList.Add(new PlayerResultClass(false, 0));
+        }
+    }
+    
 
     #endregion
 
@@ -281,11 +295,17 @@ public class GameManager : MonoBehaviour
 
     private void GotoGamePlayAction()
     {
+        //set parameters
         Time.timeScale = 1;
+        gotPaused = false;
+        
+        //set UI
         GamePlayPauseUI.SetActive(false);
         HintUI.SetActive(false);
         if (starGlowObj != null)
             starGlowObj.SetActive(false);
+
+        
 
         if (StateList[previousStateIndex].ThisState != StateEnum.GamePlayPause &&
             StateList[previousStateIndex].ThisState != StateEnum.GamePlayHint)
@@ -302,7 +322,7 @@ public class GameManager : MonoBehaviour
 
         if (gotResult)
         {
-            if (presentLevelResult.playerSuccess)
+            if (playerResultList[0].PlayerSuccess)
             {
                 gamePlayPauseTitle.text = "Success !";
             }
@@ -311,9 +331,10 @@ public class GameManager : MonoBehaviour
                 gamePlayPauseTitle.text = "Fail !";
             }
 
-            gamePlayPausePlayerName.text = playerList[presentLevelResult.playerIndex].name;
+            //gamePlayPausePlayerName.text = playerList[presentLevelResult.playerIndex].name;
 
-            gamePlayPauseTime.text = levelTime.ToString();
+            gamePlayPausePlayerName.text = "Operation: " + playerResultList[0].OperationCount;
+            gamePlayPauseTime.text = "Time: " + levelTime.ToString("F1");
         }
         else
         {
@@ -389,6 +410,8 @@ public class GameManager : MonoBehaviour
     {
         //start the game from the beginning
         gotResult = false;
+        levelTime = 0;
+        ClearResult();
         if (GlobalParameters.Instance.presentLevel.levelID != selectedLevelIndex)
             GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
 
@@ -401,6 +424,7 @@ public class GameManager : MonoBehaviour
         GlobalParameters.Instance.ResetLevel();
 
         StartPlayerComponents();
+        AudioManager.Instance.AssignPlayerAudioSource();
 
         if (!levelPreviewList.previewList[selectedLevelIndex].hinted)
         {
@@ -435,6 +459,7 @@ public class GameManager : MonoBehaviour
 
         BagManager.Instance.BagUI.transform.SetParent(StateList[(int)StateEnum.MapEditor].UIObj.transform);
     }
+    
 
     private void ConfirmExistEditor()
     {
@@ -474,9 +499,24 @@ public class GameManager : MonoBehaviour
     
     #region API
 
+    public void IncrementPlayerOperactionCount(int playerIndex)
+    {
+        playerResultList[playerIndex].OperationCount++;
+    }
+
+    public void ClearResult()
+    {
+        foreach (var item in playerResultList)
+        {
+            item.PlayerSuccess = false;
+            item.OperationCount = 0;
+        }
+    }
+
     public void SetResult(int playerIndex, bool success)
     {
-        presentLevelResult = new LevelResult(playerIndex, success, levelTime);
+        playerResultList[playerIndex].PlayerSuccess = success;
+        
 
         gotResult = true;
         //save the result as local data

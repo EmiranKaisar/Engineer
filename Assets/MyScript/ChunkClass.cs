@@ -101,14 +101,10 @@ public class ChunkClass : MonoBehaviour
     #endregion
 
     #region Tools
-    public bool StickTool(GameObject obj)
+    
+    public bool StickTool(GameObject obj, int playerIndex)
     {
         int index = ReturnIndexByObj(obj);
-        return StickToolByIndex(index);
-    }
-
-    private bool StickToolByIndex(int index)
-    {
         BagTool selectedTool = BagManager.Instance.PresentSelectedBagTool();
         if (index >= 0 && !inRotateProcedure && selectedTool.toolID != ToolEnum.Block)
         {
@@ -127,13 +123,17 @@ public class ChunkClass : MonoBehaviour
                 UpdateCentre();
                 MoveChunkToCentre();
                 CalculatePresentKinematic();
+                return true;
             }
             else
             {
                 if (chunkChildList[index].toolID == ToolEnum.Destination && selectedTool.toolID == ToolEnum.Star)
                 {
                     //put on star collected animation
+                    BagManager.Instance.DeleteSelectedTool();
+                    AudioManager.Instance.PlayerAudioSourcePlay(playerIndex, PlayerAudioEnum.StarGlow);
                     GameManager.Instance.PlayStarGlowAnimation(chunkChildList[index].stickablObj);
+                    GameManager.Instance.SetResult(playerIndex, true);
                     return true;
                 }
             }
@@ -143,7 +143,7 @@ public class ChunkClass : MonoBehaviour
         return false;
     }
 
-    public void CollectTool(GameObject obj)
+    public bool CollectTool(GameObject obj)
     {
         if (!BagManager.Instance.IsFull())
         {
@@ -162,9 +162,11 @@ public class ChunkClass : MonoBehaviour
                 UpdateCentre();
                 MoveChunkToCentre();
                 CalculatePresentKinematic();
+                return true;
             }
         }
 
+        return false;
     }
 
     private void UpdateSprite(int index, ToolEnum toolID)

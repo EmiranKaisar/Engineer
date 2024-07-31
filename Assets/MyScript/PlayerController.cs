@@ -45,18 +45,14 @@ public class PlayerController : MonoBehaviour, IAlive
 
     [HideInInspector] public int playerIndex = 0;
 
+    [HideInInspector] public int operationCount = 0;
+
     private float jumpRadiance = Mathf.PI / 3;
 
     private GameObject candidateObj;
     private GameObject previousCandidateObj;
 
     private Animator playerAnimator;
-
-    private AudioSource audioSource;
-
-    public AudioClip stickAudio;
-    public AudioClip jumpAudio;
-    public AudioClip successAudio;
 
     private Transform playerTransform;
     
@@ -68,7 +64,6 @@ public class PlayerController : MonoBehaviour, IAlive
     {
         m_Rigidbody2D = GetComponent<Rigidbody2D>();
         playerAnimator = GetComponent<Animator>();
-        audioSource = GetComponent<AudioSource>();
         playerTransform = transform;
     }
 
@@ -77,6 +72,7 @@ public class PlayerController : MonoBehaviour, IAlive
         CheckCollision();
         UpdateState();
     }
+    
 
     #region Detection
 
@@ -185,14 +181,10 @@ public class PlayerController : MonoBehaviour, IAlive
     {
         if (candidateObj != null && (m_Grounded || m_Walled))
         {
-            audioSource.clip = stickAudio;
-            audioSource.Play();
-            if (candidateObj.GetComponentInParent<ChunkClass>().StickTool(candidateObj))
-            {
-                GameManager.Instance.SetResult(playerIndex, true);
-                audioSource.clip = successAudio;
-                audioSource.Play();
-            }
+            AudioManager.Instance.PlayerAudioSourcePlay(playerIndex, PlayerAudioEnum.PlayerStick);
+            if (candidateObj.GetComponentInParent<ChunkClass>().StickTool(candidateObj, playerIndex))
+                GameManager.Instance.IncrementPlayerOperactionCount(playerIndex);
+            
         }
     }
 
@@ -200,9 +192,10 @@ public class PlayerController : MonoBehaviour, IAlive
     {
         if (candidateObj != null && (m_Grounded || m_Walled))
         {
-            audioSource.clip = stickAudio;
-            audioSource.Play();
-            candidateObj.GetComponentInParent<ChunkClass>().CollectTool(candidateObj);
+            AudioManager.Instance.PlayerAudioSourcePlay(playerIndex, PlayerAudioEnum.PlayerCollect);
+            
+            if(candidateObj.GetComponentInParent<ChunkClass>().CollectTool(candidateObj))
+                GameManager.Instance.IncrementPlayerOperactionCount(playerIndex);
         }
     }
 
@@ -246,8 +239,7 @@ public class PlayerController : MonoBehaviour, IAlive
             {
                 m_Grounded = false;
                 playerAnimator.SetBool("Jump", true);
-                audioSource.clip = jumpAudio;
-                audioSource.Play();
+                AudioManager.Instance.PlayerAudioSourcePlay(playerIndex, PlayerAudioEnum.PlayerJump);
                 m_Rigidbody2D.AddForce(jumpDirection * m_JumpForce);
             }
         }
