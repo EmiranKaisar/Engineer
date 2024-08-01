@@ -136,15 +136,10 @@ public class ScrollViewManager : MonoBehaviour
     private void PickUIObjButtonAction(int objIndex)
     {
         int levelIndex = levelObjList[objIndex].levelIndex;
-        if (CanSelect(levelIndex) || StateEnum.ChooseEditorLevel == GameManager.Instance.PresentState())
+        if (GameManager.Instance.SelectLevel(levelIndex))
         {
             UpdateSelectedAppearance(objIndex);
-            GameManager.Instance.SelectLevel(levelIndex);
         }
-    }
-
-    private void LevelCount()
-    {
     }
 
     private void UpdateSelectedAppearance(int index)
@@ -172,9 +167,5 @@ public class ScrollViewManager : MonoBehaviour
             }
         }
     }
-
-    private bool CanSelect(int index)
-    {
-        return true;
-    }
+    
 }

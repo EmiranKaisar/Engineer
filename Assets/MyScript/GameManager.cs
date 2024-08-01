@@ -15,6 +15,8 @@ public class GameManager : MonoBehaviour
 
     public LevelPreviewList levelPreviewList;
 
+    [HideInInspector] public Progress presentProgress;
+
     #region Level Result
     public float levelTime;
 
@@ -107,6 +109,19 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape) && StateList[presentStateIndex].ThisState == StateEnum.GamePlay)
         {
             StateButtonAction((int)StateEnum.GamePlayPause);
+        }
+        
+        if(Input.GetKeyDown(KeyCode.L) && presentProgress != null)
+            LogAllResults();
+    }
+
+    private void LogAllResults()
+    {
+        int index = 0;
+        foreach (var item in presentProgress.levelResultlist)
+        {
+            Debug.Log("level: " + index + "; time: " + item.timeDur + "; operation: " + item.operationCount);
+            index++;
         }
     }
 
@@ -202,6 +217,7 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0;
         InitUI();
         InitPlayerResultList();
+        InitProgress();
     }
 
     private void InitUI()
@@ -225,8 +241,14 @@ public class GameManager : MonoBehaviour
             playerResultList.Add(new PlayerResultClass(false, 0));
         }
     }
-    
 
+
+    private void InitProgress()
+    {
+        presentProgress = SaveSystem.LoadProgress(0);
+        presentProgress.slot = 0;
+    }
+    
     #endregion
 
     #region Change state
@@ -425,14 +447,21 @@ public class GameManager : MonoBehaviour
 
         StartPlayerComponents();
         AudioManager.Instance.AssignPlayerAudioSource();
+        
+        if(presentProgress.levelResultlist.Count <= selectedLevelIndex)
+            presentProgress.levelResultlist.Add(new LevelResult());
 
-        if (!levelPreviewList.previewList[selectedLevelIndex].hinted)
+        presentProgress.lastPlayDate = DateTime.Now.Date.ToString("MM/dd/yyyy HH:mm");
+
+        if (!presentProgress.levelResultlist[selectedLevelIndex].hinted)
         {
             if (GlobalParameters.Instance.presentLevel.levelDescription.thisImage != null)
             {
                 StateButtonAction((int)StateEnum.GamePlayHint);
-                levelPreviewList.previewList[selectedLevelIndex].hinted = true;
+                
             }
+            
+            presentProgress.levelResultlist[selectedLevelIndex].hinted = true;
         }
     }
 
@@ -476,6 +505,7 @@ public class GameManager : MonoBehaviour
 
     public void QuitGame()
     {
+        SaveSystem.SetProgress(presentProgress.slot);
         Application.Quit();
     }
 
@@ -493,6 +523,15 @@ public class GameManager : MonoBehaviour
             //exit game
             StateButtonAction(2);
         }
+    }
+
+    private void SetSuccessProgress()
+    {
+        presentProgress.lastPlayDate = DateTime.Now.Date.ToString("MM/dd/yyyy HH:mm");
+        presentProgress.levelResultlist[selectedLevelIndex].hasPassed = true;
+        presentProgress.levelResultlist[selectedLevelIndex].timeDur = levelTime;
+        presentProgress.levelResultlist[selectedLevelIndex].operationCount = playerResultList[0].OperationCount;
+        SaveSystem.SetProgress(presentProgress.slot);
     }
 
     #endregion
@@ -516,19 +555,49 @@ public class GameManager : MonoBehaviour
     public void SetResult(int playerIndex, bool success)
     {
         playerResultList[playerIndex].PlayerSuccess = success;
-        
-
         gotResult = true;
-        //save the result as local data
-        if (!success)
+
+        if (success)
+        {
+            //save the result as local data
+            SetSuccessProgress();
+        }
+        else
         {
             StateButtonAction((int)StateEnum.GamePlayPause);
         }
+        
     }
+    
+    
 
-    public void SelectLevel(int index)
+    public bool SelectLevel(int index)
     {
-        selectedLevelIndex = index;
+        if (index == 0)
+        {
+            selectedLevelIndex = index;
+            return true;
+        }
+            
+        
+        int formerIndex = index - 1;
+        if (presentProgress.levelResultlist.Count > formerIndex)
+        {
+            if (presentProgress.levelResultlist[formerIndex].hasPassed)
+            {
+                selectedLevelIndex = index;
+                return true;
+            }
+        }
+        
+        //in editor we don't care if player passed the former level
+        if (StateList[presentStateIndex].ThisState == StateEnum.ChooseEditorLevel)
+        {
+            selectedLevelIndex = index;
+            return true;
+        }
+
+        return false;
     }
 
     public void PlayStarGlowAnimation(GameObject targetObj)
@@ -538,12 +607,7 @@ public class GameManager : MonoBehaviour
         starAnimation = StarAnimation(targetObj);
         StartCoroutine(starAnimation);
     }
-
-
-    public StateEnum PresentState()
-    {
-        return StateList[presentStateIndex].ThisState;
-    }
+    
 
     #endregion
 
