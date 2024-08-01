@@ -11,7 +11,6 @@ public static class SaveSystem
     public static Progress LoadProgress(int index)
     {
         string path = basePath + "/progress_" + index + ".bin";
-        Debug.Log(path);
         if (File.Exists(path))
         {
             BinaryFormatter formatter = new BinaryFormatter();

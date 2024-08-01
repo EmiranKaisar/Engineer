@@ -5,11 +5,10 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
 using SpriteRenderer = UnityEngine.SpriteRenderer;
+using Vector2 = UnityEngine.Vector2;
 
 public class PlayerController : MonoBehaviour, IAlive
 {
-    [SerializeField] private float m_JumpForce = 400f; // Amount of force added when the player jumps.
-
     [Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f; // How much to smooth out the movement
     [SerializeField] private bool m_AirControl = false; // Whether or not a player can steer while jumping;
     [SerializeField] private LayerMask m_WhatIsGround; // A mask determining what is ground to the character;
@@ -45,8 +44,6 @@ public class PlayerController : MonoBehaviour, IAlive
 
     [HideInInspector] public int playerIndex = 0;
 
-    [HideInInspector] public int operationCount = 0;
-
     private float jumpRadiance = Mathf.PI / 3;
 
     private GameObject candidateObj;
@@ -57,7 +54,11 @@ public class PlayerController : MonoBehaviour, IAlive
     private Transform playerTransform;
     
     private Vector2 jumpDirection;
+    private float standardJumpHeight = 3;
+    private float jumpHeight = 3;
     private bool canJumpOnWall;
+    private float jumpBufferTime = 0.15f;
+    private float jumpTimer = 0;
     
 
     private void Awake()
@@ -199,7 +200,7 @@ public class PlayerController : MonoBehaviour, IAlive
         }
     }
 
-    public void Move(float move, bool crouch, bool jump)
+    public void Move(float move, bool jump)
     {
         AssignCandidate(move);
         //only control the player if grounded or airControl is turned on
@@ -231,22 +232,31 @@ public class PlayerController : MonoBehaviour, IAlive
         }
         
 
-
-        // If the player should jump...
-        if ((m_Grounded || (m_Walled && canJumpOnWall)))
+        
+        if (jump)
         {
-            if (jump)
-            {
-                m_Grounded = false;
-                playerAnimator.SetBool("Jump", true);
-                AudioManager.Instance.PlayerAudioSourcePlay(playerIndex, PlayerAudioEnum.PlayerJump);
-                m_Rigidbody2D.AddForce(jumpDirection * m_JumpForce);
-            }
+            jumpTimer = jumpBufferTime;
         }
+        TimeBufferJump();
+
 
         ApplyBound();
         ApplyGravity();
     }
+
+    private void TimeBufferJump()
+    {
+        if (jumpTimer > 0)
+        {
+            jumpTimer -= Time.fixedDeltaTime;
+            if ((m_Grounded || (m_Walled && canJumpOnWall)))
+            {
+                jumpTimer = -1;
+                ApplyJump();
+            }
+        }
+    }
+
     
     #endregion
 
@@ -350,6 +360,22 @@ public class PlayerController : MonoBehaviour, IAlive
     
     #endregion
 
+
+    private void ApplyJump()
+    {
+        m_Grounded = false;
+        m_Walled = false;
+        canJumpOnWall = false;
+        playerAnimator.SetBool("Jump", true);
+        
+        AudioManager.Instance.PlayerAudioSourcePlay(playerIndex, PlayerAudioEnum.PlayerJump);
+        
+        Vector2 velocity = m_Rigidbody2D.velocity;
+        if (velocity.y < 0)
+            velocity = new Vector2(velocity.x, -velocity.y);
+        
+        m_Rigidbody2D.velocity += velocity + jumpDirection * Mathf.Sqrt(2 * jumpHeight * gravity);
+    }
     
     public void AfterJumpAnim()
     {
@@ -358,7 +384,7 @@ public class PlayerController : MonoBehaviour, IAlive
     
     private void ApplyGravity()
     {
-        m_Rigidbody2D.AddForce(new Vector2(0f, -gravity));
+        m_Rigidbody2D.velocity += new Vector2(0, -gravity)*Time.fixedDeltaTime;
     }
     
     private void Flip()

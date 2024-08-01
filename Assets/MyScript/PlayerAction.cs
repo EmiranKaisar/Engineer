@@ -16,6 +16,9 @@ public class PlayerAction : MonoBehaviour
     private bool clingRightWall;
 
     private bool clingLeftWall;
+
+    private float jumpPressedThreshold = 0.2f;
+    private float jumpPressedDur = 0;
     
 
     // Update is called once per frame
@@ -27,6 +30,8 @@ public class PlayerAction : MonoBehaviour
         {
             jump = true;
         }
+        
+
 
         if (Input.GetKeyDown(KeyCode.S))
         {
@@ -45,7 +50,7 @@ public class PlayerAction : MonoBehaviour
 
     private void FixedUpdate()
     {
-        playerController.Move(horizontalMove*Time.fixedDeltaTime, false, jump);
+        playerController.Move(horizontalMove*Time.fixedDeltaTime, jump);
         jump = false;
         
     }
