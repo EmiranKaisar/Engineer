@@ -22,7 +22,7 @@ MonoBehaviour:
     hinted: 0
     levelType: 0
   - levelID: 2
-    levelName: Move
+    levelName: Move(1)
     hinted: 0
     levelType: 0
   - levelID: 3
@@ -41,27 +41,31 @@ MonoBehaviour:
     levelName: Rotate(3)
     hinted: 0
     levelType: 0
-  - levelID: 5
+  - levelID: 7
     levelName: Combination
     hinted: 0
     levelType: 0
-  - levelID: 5
+  - levelID: 8
     levelName: Tricky
     hinted: 0
     levelType: 0
-  - levelID: 6
+  - levelID: 9
     levelName: Attack
     hinted: 0
     levelType: 0
-  - levelID: 7
+  - levelID: 10
     levelName: Killer
     hinted: 0
     levelType: 0
-  - levelID: 8
-    levelName: Center
+  - levelID: 11
+    levelName: Flip(1)
     hinted: 0
     levelType: 0
-  - levelID: 9
-    levelName: Flip
+  - levelID: 12
+    levelName: Flip(2)
+    hinted: 0
+    levelType: 0
+  - levelID: 13
+    levelName: Flip(3)
     hinted: 0
     levelType: 0
