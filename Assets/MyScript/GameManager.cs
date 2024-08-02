@@ -311,8 +311,9 @@ public class GameManager : MonoBehaviour
 
         selectedLevelIndex = 0;
 
-        GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
-
+        //GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
+        GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
+        
         //load local level data
         LevelScrollView.GetComponent<ScrollViewManager>().ShowLevel();
     }
@@ -376,7 +377,8 @@ public class GameManager : MonoBehaviour
 
         //load level data
         selectedLevelIndex = 0;
-        GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
+        GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
+        //GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
 
         //load level preview list for scroll view
         LevelScrollView.GetComponent<ScrollViewManager>().ShowLevel();
@@ -437,7 +439,8 @@ public class GameManager : MonoBehaviour
         levelTime = 0;
         ClearResult();
         if (GlobalParameters.Instance.presentLevel.levelID != selectedLevelIndex)
-            GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
+            GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
+            //GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
 
 
         GlobalParameters.Instance.EditMode(false);
@@ -486,7 +489,8 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0;
 
         if (GlobalParameters.Instance.presentLevel.levelID != selectedLevelIndex)
-            GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
+            GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
+            //GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
 
         levelNameText.text = GlobalParameters.Instance.presentLevel.levelName;
 

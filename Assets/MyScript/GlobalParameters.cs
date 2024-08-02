@@ -187,9 +187,21 @@ public class GlobalParameters : MonoBehaviour
     }
 
 
-    public bool LoadLevel(int levelID)
+    // public bool LoadLevel(int levelID)
+    // {
+    //     presentLevel = Resources.Load("Level/Level_" + levelID) as LevelTemplate;
+    //     if (presentLevel != null)
+    //     {
+    //         return true;
+    //     }
+    //     
+    //     Debug.LogError("there is no such level");
+    //     return false;
+    // }
+
+    public bool LoadLevel(string levelName)
     {
-        presentLevel = Resources.Load("Level/Level_" + levelID) as LevelTemplate;
+        presentLevel = Resources.Load("Level/" + levelName) as LevelTemplate;
         if (presentLevel != null)
         {
             return true;

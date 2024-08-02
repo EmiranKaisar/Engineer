@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3edad888d017e401e9ecbc1e26686881, type: 3}
-  m_Name: Level_1
+  m_Name: Rotate(2)
   m_EditorClassIdentifier: 
-  levelID: 1
-  levelName: Jump
+  levelID: 5
+  levelName: Center
   playerSpawnList:
-  - {x: -12.226153, y: -2.9850001, z: 0}
+  - {x: -11.61, y: -2.768, z: 0}
   sceneChunkList:
   - chunkPropList:
     - toolID: 5
@@ -30,42 +30,34 @@ MonoBehaviour:
   - chunkPropList:
     - toolID: 0
       toolDirection: 0
-      toolPos: {x: -10, y: -2, z: 0}
+      toolPos: {x: -1, y: 0, z: 0}
+    - toolID: 2
+      toolDirection: 0
+      toolPos: {x: 0, y: 0, z: 0}
     - toolID: 0
       toolDirection: 0
-      toolPos: {x: -10, y: -1, z: 0}
-    - toolID: 0
+      toolPos: {x: 1, y: 0, z: 0}
+    - toolID: 2
       toolDirection: 0
-      toolPos: {x: -10, y: 0.00000011920929, z: 0}
-    - toolID: 0
-      toolDirection: 0
-      toolPos: {x: -10, y: 1.0000002, z: 0}
-  - chunkPropList:
-    - toolID: 0
-      toolDirection: 0
-      toolPos: {x: -6, y: 1.0000001, z: 0}
-    - toolID: 0
-      toolDirection: 0
-      toolPos: {x: -5, y: 1, z: 0}
-    - toolID: 0
-      toolDirection: 0
-      toolPos: {x: -3.9999995, y: 0.9999999, z: 0}
-    - toolID: 0
-      toolDirection: 0
-      toolPos: {x: -3, y: 1, z: 0}
+      toolPos: {x: 2, y: 0, z: 0}
   - chunkPropList:
     - toolID: 4
       toolDirection: 0
-      toolPos: {x: 0, y: 1, z: 0}
+      toolPos: {x: 11, y: 4, z: 0}
     - toolID: 0
       toolDirection: 0
-      toolPos: {x: 1, y: 1, z: 0}
+      toolPos: {x: 12, y: 4, z: 0}
     - toolID: 0
       toolDirection: 0
-      toolPos: {x: 2, y: 1, z: 0}
-  bagToolList: []
+      toolPos: {x: 13, y: 4, z: 0}
+  bagToolList:
+  - toolID: 1
+    toolDirection: 0
+  - toolID: 9
+    toolDirection: 0
   levelDescription:
-    thisImage: {fileID: 21300000, guid: 14ffce2c943ff4c2aa91487cb3cfca1d, type: 3}
-    descriptionTitle: Jump
-    description: You can also jump on the wall, by leaning against it
+    thisImage: {fileID: 21300000, guid: c523beab7c2034f89b0675631a293f94, type: 3}
+    descriptionTitle: Multiple rotation
+    description: The first rotate sign is the rotation center, the others simply
+      speed up !
   levelType: 0

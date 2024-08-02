@@ -26,10 +26,22 @@ MonoBehaviour:
     hinted: 0
     levelType: 0
   - levelID: 3
-    levelName: Rotate
+    levelName: Move(2)
     hinted: 0
     levelType: 0
   - levelID: 4
+    levelName: Rotate(1)
+    hinted: 0
+    levelType: 0
+  - levelID: 5
+    levelName: Rotate(2)
+    hinted: 0
+    levelType: 0
+  - levelID: 6
+    levelName: Rotate(3)
+    hinted: 0
+    levelType: 0
+  - levelID: 5
     levelName: Combination
     hinted: 0
     levelType: 0
