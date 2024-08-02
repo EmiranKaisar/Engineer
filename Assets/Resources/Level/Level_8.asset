@@ -50,7 +50,9 @@ MonoBehaviour:
     - toolID: 0
       toolDirection: 0
       toolPos: {x: 13, y: 4, z: 0}
-  bagToolList: []
+  bagToolList:
+  - toolID: 1
+    toolDirection: 0
   levelDescription:
     thisImage: {fileID: 21300000, guid: c523beab7c2034f89b0675631a293f94, type: 3}
     descriptionTitle: Multiple rotation

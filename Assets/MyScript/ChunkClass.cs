@@ -40,6 +40,8 @@ public class ChunkClass : MonoBehaviour
 
     private int rotateCount = 0;
 
+    private List<ChunkClass> linkedChunkClass = new List<ChunkClass>();
+
     //the first one is rotate center
     private List<int> rotaterList = new List<int>();
     
@@ -50,10 +52,10 @@ public class ChunkClass : MonoBehaviour
         //init parameters
         InitParameters();
         
+        InitProp();
+        
         //init centre
         InitCentre();
-        
-        InitProp();
         
 
     }
@@ -66,13 +68,10 @@ public class ChunkClass : MonoBehaviour
         //init parameters
         InitParameters();
         
-        //init centre
-        InitCentre();
-        
         InitProp();
         
-        
-        
+        //init centre
+        InitCentre();
     }
     
     
@@ -127,15 +126,14 @@ public class ChunkClass : MonoBehaviour
                 chunkChildList[index].toolID = selectedTool.toolID;
                 chunkChildList[index].toolDir = selectedTool.toolDirection;
                 
-
+                UpdateSprite(index, selectedTool.toolID);
                 GlobalMethod.OperateUIDirection(chunkChildList[index].stickablObj, (int)selectedTool.toolDirection);
 
                 BagManager.Instance.DeleteSelectedTool();
+                
                 if(selectedTool.toolID == ToolEnum.Rotate)
                     PushRotaterList(index);
 
-                UpdateSprite(index, selectedTool.toolID);
-                
                 UpdateStickState(chunkChildList[index]);
                 UpdateCentre();
                 MoveChunkToCentre();
@@ -169,6 +167,7 @@ public class ChunkClass : MonoBehaviour
             if (index >= 0 && chunkChildList[index].sticked && !inRotateProcedure)
             {
                 BagManager.Instance.AddTool(new BagTool(chunkChildList[index].toolID, chunkChildList[index].toolDir));
+                UpdateSprite(index, SpriteEnum.Block);
                 
                 if(chunkChildList[index].toolID == ToolEnum.Rotate)
                     PopRotaterList(index);
@@ -176,7 +175,8 @@ public class ChunkClass : MonoBehaviour
                 chunkChildList[index].sticked = false;
                 chunkChildList[index].toolID = ToolEnum.Block;
                 chunkChildList[index].toolDir = ToolDirection.Original;
-                UpdateSprite(index, ToolEnum.Block);
+                
+                
             
                 UpdateStickState(chunkChildList[index]);
                 UpdateCentre();
@@ -192,14 +192,12 @@ public class ChunkClass : MonoBehaviour
     private void UpdateSprite(int index, ToolEnum toolID)
     {
         chunkChildList[index].stickablObj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)toolID);
-        if (rotaterList.Count > 0)
-        {
-            if (index == rotaterList[0])
-                chunkChildList[index].stickablObj.GetComponent<SpriteRenderer>().sprite =
-                    SpriteManager.Instance.ReturnToolSprite((int)SpriteEnum.RotateCenter);
-        }
         
-        
+    }
+
+    private void UpdateSprite(int index, SpriteEnum spriteID)
+    {
+        chunkChildList[index].stickablObj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)spriteID);
     }
     
 
@@ -232,38 +230,16 @@ public class ChunkClass : MonoBehaviour
     private void PushRotaterList(int index)
     {
         rotaterList.Add(index);
-        
+        UpdateSprite(rotaterList[0], SpriteEnum.RotateCenter);
     }
 
     private void PopRotaterList(int index)
     {
         rotaterList.Remove(index);
+        if(rotaterList.Count > 0)
+            UpdateSprite(rotaterList[0], SpriteEnum.RotateCenter);
     }
     
-    
-    
-    private void UpdateRelevantPos()
-    {
-        relevantPos.Clear();
-        int rotaterCount = 0;
-        foreach (var item in chunkChildList)
-        {
-            if (item.toolID == ToolEnum.Rotate)
-            {
-                rotaterCount++;
-                relevantPos.Add(item.stickablObj.transform.position);
-            }
-        }
-
-        if (rotaterCount <= 0)
-        {
-            foreach (var item in chunkChildList)
-            {
-                relevantPos.Add(item.stickablObj.transform.position);
-            }
-        }
-    }
-
     private void UpdateCentre()
     {
         if (rotaterList.Count > 0)
