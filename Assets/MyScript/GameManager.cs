@@ -37,6 +37,8 @@ public class GameManager : MonoBehaviour
     #endregion
 
     public List<GameObject> playerList = new List<GameObject>();
+
+    public bool TestMode = true;
     
 
     public delegate void StateChangeAction();
@@ -447,22 +449,27 @@ public class GameManager : MonoBehaviour
 
         StartPlayerComponents();
         AudioManager.Instance.AssignPlayerAudioSource();
-        
-        if(presentProgress.levelResultlist.Count <= selectedLevelIndex)
-            presentProgress.levelResultlist.Add(new LevelResult());
 
-        presentProgress.lastPlayDate = DateTime.Now.Date.ToString("MM/dd/yyyy HH:mm");
-
-        if (!presentProgress.levelResultlist[selectedLevelIndex].hinted)
+        if (!TestMode)
         {
-            if (GlobalParameters.Instance.presentLevel.levelDescription.thisImage != null)
+            if(presentProgress.levelResultlist.Count <= selectedLevelIndex)
+                presentProgress.levelResultlist.Add(new LevelResult());
+
+            presentProgress.lastPlayDate = DateTime.Now.Date.ToString("MM/dd/yyyy HH:mm");
+
+            if (!presentProgress.levelResultlist[selectedLevelIndex].hinted)
             {
-                StateButtonAction((int)StateEnum.GamePlayHint);
+                if (GlobalParameters.Instance.presentLevel.levelDescription.thisImage != null)
+                {
+                    StateButtonAction((int)StateEnum.GamePlayHint);
                 
-            }
+                }
             
-            presentProgress.levelResultlist[selectedLevelIndex].hinted = true;
+                presentProgress.levelResultlist[selectedLevelIndex].hinted = true;
+            }
         }
+        
+        
     }
 
     private void StartPlayerComponents()
@@ -505,7 +512,8 @@ public class GameManager : MonoBehaviour
 
     public void QuitGame()
     {
-        SaveSystem.SetProgress(presentProgress.slot);
+        if(!TestMode)
+           SaveSystem.SetProgress(presentProgress.slot);
         Application.Quit();
     }
 
@@ -560,7 +568,8 @@ public class GameManager : MonoBehaviour
         if (success)
         {
             //save the result as local data
-            SetSuccessProgress();
+            if(!TestMode)
+                SetSuccessProgress();
         }
         else
         {
@@ -591,7 +600,7 @@ public class GameManager : MonoBehaviour
         }
         
         //in editor we don't care if player passed the former level
-        if (StateList[presentStateIndex].ThisState == StateEnum.ChooseEditorLevel)
+        if (StateList[presentStateIndex].ThisState == StateEnum.ChooseEditorLevel || TestMode)
         {
             selectedLevelIndex = index;
             return true;

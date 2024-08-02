@@ -45,3 +45,7 @@ MonoBehaviour:
     levelName: Killer
     hinted: 0
     levelType: 0
+  - levelID: 8
+    levelName: Kingdom of rotation
+    hinted: 0
+    levelType: 0

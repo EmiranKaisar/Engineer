@@ -576,6 +576,8 @@ MonoBehaviour:
     toolSprite: {fileID: 21300000, guid: 5fa35a59e87394370b8274882bbc6e27, type: 3}
   - toolID: 8
     toolSprite: {fileID: 21300000, guid: c110ee0d71142486b98d7c6aaade227a, type: 3}
+  - toolID: 9
+    toolSprite: {fileID: 21300000, guid: c523beab7c2034f89b0675631a293f94, type: 3}
 --- !u!4 &119871682
 Transform:
   m_ObjectHideFlags: 0
@@ -1702,6 +1704,10 @@ MonoBehaviour:
     toolDirection: 3
   starGlowPrefab: {fileID: 1858833191389840553, guid: 8375e019cd9744c56bf2a473c2b4c491, type: 3}
   levelPreviewList: {fileID: 11400000, guid: 4a58e3b7e02ce490fa41bf7b03ca04d5, type: 2}
+  presentProgress:
+    slot: 0
+    levelResultlist: []
+    lastPlayDate: 
   levelTime: 0
   playerList:
   - {fileID: 1842122954}
@@ -9771,7 +9777,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5fa3398ff2de4ef9aa2a8102b121b0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_JumpForce: 600
   m_MovementSmoothing: 0.05
   m_AirControl: 1
   m_WhatIsGround:
@@ -9813,7 +9818,6 @@ MonoBehaviour:
   gravity: 20
   playerName: 
   playerIndex: 0
-  operationCount: 0
 --- !u!50 &1842122958
 Rigidbody2D:
   serializedVersion: 4

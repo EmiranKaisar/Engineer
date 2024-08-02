@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level_7
   m_EditorClassIdentifier: 
   levelID: 7
-  levelName: Killer
+  levelName: killer
   playerSpawnList:
   - {x: -13.5, y: -2.008, z: 0}
   sceneChunkList:

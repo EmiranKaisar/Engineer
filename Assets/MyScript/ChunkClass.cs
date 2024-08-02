@@ -39,16 +39,23 @@ public class ChunkClass : MonoBehaviour
     private Vector3 presentCentre;
 
     private int rotateCount = 0;
+
+    //the first one is rotate center
+    private List<int> rotaterList = new List<int>();
     
 
     // Start is called before the first frame update
     void Start()
     {
-        InitProp();
         //init parameters
         InitParameters();
+        
         //init centre
         InitCentre();
+        
+        InitProp();
+        
+
     }
 
 
@@ -56,21 +63,25 @@ public class ChunkClass : MonoBehaviour
     
     public void InitChunk()
     {
-        InitProp();
         //init parameters
         InitParameters();
+        
         //init centre
         InitCentre();
+        
+        InitProp();
+        
+        
+        
     }
     
     
     private void InitProp()
     {
-        chunkTransform = this.transform;
+        int index = 0;
         foreach (var item in chunkChildList)
         {
-            item.stickablObj.GetComponent<SpriteRenderer>().sprite =
-                SpriteManager.Instance.ReturnToolSprite((int)item.toolID);
+            UpdateSprite(index, item.toolID);
             GlobalMethod.OperateUIDirection(item.stickablObj, (int)item.toolDir);
             UpdateStickState(item);
             item.stickablObj.GetComponent<SpriteRenderer>().color = new Color(0.8f, 0.8f, 0.8f, 1);
@@ -79,12 +90,14 @@ public class ChunkClass : MonoBehaviour
                 if(this.gameObject.GetComponent<KillerController>() == null)
                      this.gameObject.AddComponent<KillerController>();
             }
-                
+
+            index++;
         }
     }
 
     private void InitParameters()
     {
+        chunkTransform = this.transform;
         moveSpeed = GlobalParameters.Instance.moveToolSpeed;
         rotateDur = GlobalParameters.Instance.rotateToolDur;
         inRotateProcedure = false;
@@ -92,7 +105,7 @@ public class ChunkClass : MonoBehaviour
 
     private void InitCentre()
     {
-        UpdateRelevantPos();
+        InitRotaterList();
         UpdateCentre();
         MoveChunkToCentre();
         CalculatePresentKinematic();
@@ -113,13 +126,17 @@ public class ChunkClass : MonoBehaviour
                 chunkChildList[index].sticked = true;
                 chunkChildList[index].toolID = selectedTool.toolID;
                 chunkChildList[index].toolDir = selectedTool.toolDirection;
-                UpdateSprite(index, selectedTool.toolID);
+                
 
                 GlobalMethod.OperateUIDirection(chunkChildList[index].stickablObj, (int)selectedTool.toolDirection);
 
                 BagManager.Instance.DeleteSelectedTool();
+                if(selectedTool.toolID == ToolEnum.Rotate)
+                    PushRotaterList(index);
+
+                UpdateSprite(index, selectedTool.toolID);
+                
                 UpdateStickState(chunkChildList[index]);
-                UpdateRelevantPos();
                 UpdateCentre();
                 MoveChunkToCentre();
                 CalculatePresentKinematic();
@@ -152,13 +169,16 @@ public class ChunkClass : MonoBehaviour
             if (index >= 0 && chunkChildList[index].sticked && !inRotateProcedure)
             {
                 BagManager.Instance.AddTool(new BagTool(chunkChildList[index].toolID, chunkChildList[index].toolDir));
+                
+                if(chunkChildList[index].toolID == ToolEnum.Rotate)
+                    PopRotaterList(index);
+                
                 chunkChildList[index].sticked = false;
                 chunkChildList[index].toolID = ToolEnum.Block;
                 chunkChildList[index].toolDir = ToolDirection.Original;
                 UpdateSprite(index, ToolEnum.Block);
             
                 UpdateStickState(chunkChildList[index]);
-                UpdateRelevantPos();
                 UpdateCentre();
                 MoveChunkToCentre();
                 CalculatePresentKinematic();
@@ -172,6 +192,14 @@ public class ChunkClass : MonoBehaviour
     private void UpdateSprite(int index, ToolEnum toolID)
     {
         chunkChildList[index].stickablObj.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.ReturnToolSprite((int)toolID);
+        if (rotaterList.Count > 0)
+        {
+            if (index == rotaterList[0])
+                chunkChildList[index].stickablObj.GetComponent<SpriteRenderer>().sprite =
+                    SpriteManager.Instance.ReturnToolSprite((int)SpriteEnum.RotateCenter);
+        }
+        
+        
     }
     
 
@@ -190,6 +218,30 @@ public class ChunkClass : MonoBehaviour
     #endregion
     
     #region Chunk motion
+
+    private void InitRotaterList()
+    {
+        rotaterList.Clear();
+        for (int i = 0; i < chunkChildList.Count; i++)
+        {
+            if(chunkChildList[i].toolID == ToolEnum.Rotate)
+                PushRotaterList(i);
+        }
+    }
+
+    private void PushRotaterList(int index)
+    {
+        rotaterList.Add(index);
+        
+    }
+
+    private void PopRotaterList(int index)
+    {
+        rotaterList.Remove(index);
+    }
+    
+    
+    
     private void UpdateRelevantPos()
     {
         relevantPos.Clear();
@@ -214,13 +266,12 @@ public class ChunkClass : MonoBehaviour
 
     private void UpdateCentre()
     {
-        Vector3 centre = Vector3.zero;
-        foreach (var pos in relevantPos)
+        if (rotaterList.Count > 0)
+            presentCentre = chunkChildList[rotaterList[0]].stickablObj.transform.position;
+        else
         {
-            centre += pos;
+            presentCentre = chunkChildList[0].stickablObj.transform.position;
         }
-
-        presentCentre = centre / relevantPos.Count;
     }
 
     private void MoveChunkToCentre()
