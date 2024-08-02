@@ -46,6 +46,10 @@ MonoBehaviour:
     hinted: 0
     levelType: 0
   - levelID: 8
-    levelName: Kingdom of rotation
+    levelName: Center
+    hinted: 0
+    levelType: 0
+  - levelID: 9
+    levelName: Flip
     hinted: 0
     levelType: 0

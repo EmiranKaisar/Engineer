@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level_8
   m_EditorClassIdentifier: 
   levelID: 8
-  levelName: Kingdom of rotation
+  levelName: Center
   playerSpawnList:
   - {x: -11.61, y: -2.768, z: 0}
   sceneChunkList:
@@ -52,6 +52,8 @@ MonoBehaviour:
       toolPos: {x: 13, y: 4, z: 0}
   bagToolList:
   - toolID: 1
+    toolDirection: 0
+  - toolID: 9
     toolDirection: 0
   levelDescription:
     thisImage: {fileID: 21300000, guid: c523beab7c2034f89b0675631a293f94, type: 3}

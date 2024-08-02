@@ -10,6 +10,7 @@ public enum ToolEnum
     Corpse,
     Attack,
     Killer,
+    Flip,
 }
 
 public enum SpriteEnum
@@ -23,7 +24,8 @@ public enum SpriteEnum
     Corpse = 6,
     Attack = 7,
     Killer = 8,
-    RotateCenter = 9,
+    Flip = 9,
+    RotateCenter = 10,
 }
 
 

@@ -195,7 +195,7 @@ public class PlayerController : MonoBehaviour, IAlive
         {
             AudioManager.Instance.PlayerAudioSourcePlay(playerIndex, PlayerAudioEnum.PlayerCollect);
             
-            if(candidateObj.GetComponentInParent<ChunkClass>().CollectTool(candidateObj))
+            if(candidateObj.GetComponentInParent<ChunkClass>().CollectTool(candidateObj, playerIndex))
                 GameManager.Instance.IncrementPlayerOperactionCount(playerIndex);
         }
     }

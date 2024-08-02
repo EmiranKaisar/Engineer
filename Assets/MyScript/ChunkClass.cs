@@ -40,10 +40,10 @@ public class ChunkClass : MonoBehaviour
 
     private int rotateCount = 0;
 
-    private List<ChunkClass> linkedChunkClass = new List<ChunkClass>();
-
     //the first one is rotate center
     private List<int> rotaterList = new List<int>();
+
+    private List<int> linkList = new List<int>();
     
 
     // Start is called before the first frame update
@@ -73,7 +73,6 @@ public class ChunkClass : MonoBehaviour
         //init centre
         InitCentre();
     }
-    
     
     private void InitProp()
     {
@@ -133,6 +132,9 @@ public class ChunkClass : MonoBehaviour
                 
                 if(selectedTool.toolID == ToolEnum.Rotate)
                     PushRotaterList(index);
+                
+                if(selectedTool.toolID == ToolEnum.Flip)
+                    ApplyFlip(index, selectedTool.toolDirection, playerIndex);
 
                 UpdateStickState(chunkChildList[index]);
                 UpdateCentre();
@@ -158,7 +160,7 @@ public class ChunkClass : MonoBehaviour
         return false;
     }
 
-    public bool CollectTool(GameObject obj)
+    public bool CollectTool(GameObject obj, int playerIndex)
     {
         if (!BagManager.Instance.IsFull())
         {
@@ -171,6 +173,9 @@ public class ChunkClass : MonoBehaviour
                 
                 if(chunkChildList[index].toolID == ToolEnum.Rotate)
                     PopRotaterList(index);
+                
+                if(chunkChildList[index].toolID == ToolEnum.Flip)
+                    ApplyFlip(index, chunkChildList[index].toolDir, playerIndex);
                 
                 chunkChildList[index].sticked = false;
                 chunkChildList[index].toolID = ToolEnum.Block;
@@ -334,6 +339,7 @@ public class ChunkClass : MonoBehaviour
         ApplyMovement();
         ApplyRotation();
         UpdateAttack();
+        
     }
 
     private void ApplyMovement()
@@ -363,6 +369,34 @@ public class ChunkClass : MonoBehaviour
         {
             rotateTimer = 0;
         }
+    }
+    
+    private void ApplyFlip(int index, ToolDirection dir, int playerIndex)
+    {
+        presentCentre = chunkChildList[index].stickablObj.transform.position;
+        MoveChunkToCentre();
+        GameManager.Instance.playerList[playerIndex].transform.SetParent(chunkTransform);
+        if (dir == ToolDirection.Original || dir == ToolDirection.Left)
+        {
+            //rotate 180 around Y
+            chunkTransform.rotation *= Quaternion.AngleAxis(180, Vector3.up);
+            GameManager.Instance.playerList[playerIndex].transform.rotation *= Quaternion.AngleAxis(180, Vector3.up);
+        }
+        else
+        {
+            //rotate 180 around X
+            chunkTransform.rotation *= Quaternion.AngleAxis(180, Vector3.right);
+            GameManager.Instance.playerList[playerIndex].transform.rotation*= Quaternion.AngleAxis(180, Vector3.right);
+        }
+        
+        GameManager.Instance.playerList[playerIndex].transform.SetParent(GlobalParameters.Instance.playerObjs.transform);
+        
+        
+        foreach (var item in chunkChildList)
+        {
+            UpdateToolDirection(item);
+        }
+        
     }
     
     #endregion
@@ -439,28 +473,6 @@ public class ChunkClass : MonoBehaviour
         inRotateProcedure = false;
     }
     
-    private float stickAnimDur = 0.2f;
-    private IEnumerator stickPlayerAnim;
-    private IEnumerator StickPlayerAnim(GameObject playerObj, int index)
-    {
-        Vector3 startPos = playerObj.transform.position;
-        
-        float timer = 0;
-        while (timer <= stickAnimDur)
-        {
-            timer += Time.deltaTime;
-            playerObj.transform.position = Vector3.Lerp(startPos, chunkChildList[index].stickablObj.transform.position, timer/stickAnimDur);
-            yield return null;
-        }
-        
-        playerObj.SetActive(false);
-
-
-        UpdateSprite(index, ToolEnum.Corpse);
-
-        yield return new WaitForSeconds(0.4f);
-        GameManager.Instance.SetResult(playerObj.GetComponent<PlayerController>().playerIndex, false);
-    }
 
     #endregion
 
