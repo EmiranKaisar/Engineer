@@ -12,8 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3edad888d017e401e9ecbc1e26686881, type: 3}
   m_Name: Rotate(2)
   m_EditorClassIdentifier: 
-  levelID: 5
-  levelName: Rotate(2)
   playerSpawnList:
   - {x: -11.61, y: -2.768, z: 0}
   sceneChunkList:
@@ -54,7 +52,7 @@ MonoBehaviour:
   - toolID: 1
     toolDirection: 0
   levelDescription:
-    thisImage: {fileID: 21300000, guid: c523beab7c2034f89b0675631a293f94, type: 3}
+    thisImage: {fileID: 21300000, guid: 8759370e6dd6f44c39b7a378e60f2e60, type: 3}
     descriptionTitle: Multiple rotation
     description: The first rotate sign is the rotation center, the others simply
       speed up !

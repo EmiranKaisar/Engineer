@@ -377,6 +377,7 @@ public class GameManager : MonoBehaviour
             gamePlayPauseTitle.text = "";
             gamePlayPausePlayerName.text = "";
             gamePlayPauseTime.text = "";
+            finalWinText.text = "";
         }
     }
 
@@ -436,6 +437,7 @@ public class GameManager : MonoBehaviour
         {
             gamePlayHintTitle.text = "No hint for this level";
             gamePlayHintDescription.text = "";
+            gamePlayHintImage.sprite = null;
         }
     }
 

@@ -12,8 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3edad888d017e401e9ecbc1e26686881, type: 3}
   m_Name: Killer
   m_EditorClassIdentifier: 
-  levelID: 10
-  levelName: Killer
   playerSpawnList:
   - {x: -13.5, y: -2.008, z: 0}
   sceneChunkList:
@@ -59,7 +57,7 @@ MonoBehaviour:
   - toolID: 2
     toolDirection: 0
   levelDescription:
-    thisImage: {fileID: 21300000, guid: c110ee0d71142486b98d7c6aaade227a, type: 3}
+    thisImage: {fileID: 21300000, guid: 6e6ab087cef9d4257ada38af8d538b74, type: 3}
     descriptionTitle: Killer
     description: This demon kills every thing nearby
   levelType: 0

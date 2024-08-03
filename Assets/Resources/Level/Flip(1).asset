@@ -12,8 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3edad888d017e401e9ecbc1e26686881, type: 3}
   m_Name: Flip(1)
   m_EditorClassIdentifier: 
-  levelID: 11
-  levelName: Flip(1)
   playerSpawnList:
   - {x: -11.61, y: -2.984, z: 0}
   sceneChunkList:
@@ -84,7 +82,7 @@ MonoBehaviour:
   - toolID: 9
     toolDirection: 0
   levelDescription:
-    thisImage: {fileID: 21300000, guid: 4bfb1b5bca283413abe23089f3ebe8a1, type: 3}
+    thisImage: {fileID: 21300000, guid: 69933aac7f63b4e03a6a02049d6ec3ac, type: 3}
     descriptionTitle: Flip
     description: Flip the props around the give direction
   levelType: 0
