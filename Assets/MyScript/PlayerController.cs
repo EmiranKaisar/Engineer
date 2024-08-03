@@ -40,6 +40,8 @@ public class PlayerController : MonoBehaviour, IAlive
 
     public float gravity = 20;
 
+    private float playerSpeed = 10;
+
     [HideInInspector] public string playerName;
 
     [HideInInspector] public int playerIndex = 0;
@@ -128,7 +130,8 @@ public class PlayerController : MonoBehaviour, IAlive
 
     private void UpdateState()
     {
-        m_Grounded = faceDetectorList[(int)DetectorEnum.Bottom].collided;
+        m_Grounded = faceDetectorList[(int)DetectorEnum.Bottom].collided || (gravity < 0 && faceDetectorList[(int)DetectorEnum.Upper].collided);
+        
         m_Walled = faceDetectorList[(int)DetectorEnum.Right].collided ||
                    faceDetectorList[(int)DetectorEnum.Left].collided;
     }
@@ -141,10 +144,10 @@ public class PlayerController : MonoBehaviour, IAlive
         }else if (move < 0 && faceDetectorList[(int)DetectorEnum.Left].hasCandidate)
         {
             candidateObj = faceDetectorList[(int)DetectorEnum.Left].pointDetector[0].stickableObj;
-        }else if (faceDetectorList[(int)DetectorEnum.Upper].hasCandidate)
+        }else if (faceDetectorList[(int)DetectorEnum.Upper].hasCandidate && upsideDown)
         {
             candidateObj = faceDetectorList[(int)DetectorEnum.Upper].pointDetector[0].stickableObj;
-        }else if (faceDetectorList[(int)DetectorEnum.Bottom].hasCandidate)
+        }else if (faceDetectorList[(int)DetectorEnum.Bottom].hasCandidate && !upsideDown)
         {
             candidateObj = faceDetectorList[(int)DetectorEnum.Bottom].pointDetector[0].stickableObj;
         }
@@ -180,7 +183,7 @@ public class PlayerController : MonoBehaviour, IAlive
 
     public void StampCandidate()
     {
-        if (candidateObj != null && (m_Grounded || m_Walled))
+        if (candidateObj != null)
         {
             AudioManager.Instance.PlayerAudioSourcePlay(playerIndex, PlayerAudioEnum.PlayerStick);
             if (candidateObj.GetComponentInParent<ChunkClass>().StickTool(candidateObj, playerIndex))
@@ -191,7 +194,7 @@ public class PlayerController : MonoBehaviour, IAlive
 
     public void CollectCandidate()
     {
-        if (candidateObj != null && (m_Grounded || m_Walled))
+        if (candidateObj != null)
         {
             AudioManager.Instance.PlayerAudioSourcePlay(playerIndex, PlayerAudioEnum.PlayerCollect);
             
@@ -207,24 +210,24 @@ public class PlayerController : MonoBehaviour, IAlive
         if (m_Grounded || m_AirControl)
         {
             // Move the character by finding the target velocity
-            Vector3 targetVelocity = new Vector2(move * 10f, m_Rigidbody2D.velocity.y);
+            Vector3 targetVelocity = new Vector2(move * playerSpeed, m_Rigidbody2D.velocity.y);
             // And then smoothing it out and applying it to the character
             m_Rigidbody2D.velocity = Vector3.SmoothDamp(m_Rigidbody2D.velocity, targetVelocity, ref m_Velocity,
                 m_MovementSmoothing);
 
-            PropAffectedMove(move);
+            PropAffectedMove(move * playerSpeed);
 
             playerAnimator.SetFloat("HorizontalSpeed", Mathf.Abs(move));
 
 
             // If the input is moving the player right and the player is facing left...
-            if (move > 0 && !m_FacingRight)
+            if (move * playerSpeed > 0 && !m_FacingRight)
             {
                 // ... flip the player.
                 Flip();
             }
             // Otherwise if the input is moving the player left and the player is facing right...
-            else if (move < 0 && m_FacingRight)
+            else if (move * playerSpeed < 0 && m_FacingRight)
             {
                 // ... flip the player.
                 Flip();
@@ -318,12 +321,18 @@ public class PlayerController : MonoBehaviour, IAlive
                     Mathf.Sin(jumpRadiance))*1.3f;
                 break;
         }
+
+        if (upsideDown)
+            jumpDirection = new Vector2(jumpDirection.x, -jumpDirection.y);
     }
 
     private void SlideOnWall()
     {
-        if(m_Rigidbody2D.velocity.y <= 0)
+        if(m_Rigidbody2D.velocity.y <= 0 && !upsideDown)
             m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, -2);
+        
+        if(m_Rigidbody2D.velocity.y >= 0 && upsideDown)
+            m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, 2);
     }
     
     private void ApplyBound()
@@ -347,6 +356,9 @@ public class PlayerController : MonoBehaviour, IAlive
         {
             m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, 0);
             playerTransform.position = new Vector2(playerTransform.position.x, GlobalParameters.Instance.verticalBound);
+            
+            if(upsideDown)
+                PlayerDie();
         }
 
 
@@ -354,7 +366,8 @@ public class PlayerController : MonoBehaviour, IAlive
         {
             m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, 0);
             playerTransform.position = new Vector2(playerTransform.position.x, -GlobalParameters.Instance.verticalBound);
-            PlayerDie();
+            if(!upsideDown)
+                PlayerDie();
         }
     }
     
@@ -371,10 +384,10 @@ public class PlayerController : MonoBehaviour, IAlive
         AudioManager.Instance.PlayerAudioSourcePlay(playerIndex, PlayerAudioEnum.PlayerJump);
         
         Vector2 velocity = m_Rigidbody2D.velocity;
-        if (velocity.y < 0)
+        if (velocity.y != 0)
             velocity = new Vector2(velocity.x, -velocity.y);
         
-        m_Rigidbody2D.velocity += velocity + jumpDirection * Mathf.Sqrt(2 * jumpHeight * gravity);
+        m_Rigidbody2D.velocity += velocity + jumpDirection * Mathf.Sqrt(2 * jumpHeight * Mathf.Abs(gravity));
     }
     
     public void AfterJumpAnim()
@@ -396,6 +409,17 @@ public class PlayerController : MonoBehaviour, IAlive
         playerTransform.rotation *= Quaternion.AngleAxis(180, Vector3.up);
     }
 
+    public void FlipByChunk(ToolDirection dir)
+    {
+        if (dir == ToolDirection.Original || dir == ToolDirection.Left)
+        {
+            playerSpeed *= -1;
+        }else if (dir == ToolDirection.Up || dir == ToolDirection.Down)
+        {
+            upsideDown = true;
+            gravity *= -1;
+        }
+    }
 
     #region Alive & Death
     public void GotAttacked()
@@ -417,9 +441,15 @@ public class PlayerController : MonoBehaviour, IAlive
         StartCoroutine(dieProcedure);
     }
 
+    private bool upsideDown = false;
     public void PlayerAlive()
     {
         //enable those components
+        playerTransform.rotation = Quaternion.identity;
+        playerSpeed = 10;
+        gravity = 20;
+        upsideDown = false;
+        m_FacingRight = true;
         this.gameObject.SetActive(true);
         playerAnimator.enabled = true;
         m_Rigidbody2D.WakeUp();

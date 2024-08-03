@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3edad888d017e401e9ecbc1e26686881, type: 3}
+  m_Name: Flip(5)
+  m_EditorClassIdentifier: 
+  playerSpawnList:
+  - {x: -4, y: -2, z: 0}
+  sceneChunkList:
+  - chunkPropList:
+    - toolID: 0
+      toolDirection: 0
+      toolPos: {x: -4, y: -4, z: 0}
+    - toolID: 4
+      toolDirection: 0
+      toolPos: {x: -3, y: -4, z: 0}
+    - toolID: 0
+      toolDirection: 0
+      toolPos: {x: -2, y: -4, z: 0}
+  - chunkPropList:
+    - toolID: 0
+      toolDirection: 0
+      toolPos: {x: 0, y: 3.93, z: 0}
+    - toolID: 5
+      toolDirection: 0
+      toolPos: {x: 1, y: 3.93, z: 0}
+    - toolID: 0
+      toolDirection: 0
+      toolPos: {x: 2, y: 3.93, z: 0}
+  bagToolList:
+  - toolID: 9
+    toolDirection: 1
+  levelDescription:
+    thisImage: {fileID: 0}
+    descriptionTitle: 
+    description: 
+  levelType: 0

@@ -370,26 +370,28 @@ public class ChunkClass : MonoBehaviour
             rotateTimer = 0;
         }
     }
-    
+
+    private GameObject tempPlayerObj;
     private void ApplyFlip(int index, ToolDirection dir, int playerIndex)
     {
         presentCentre = chunkChildList[index].stickablObj.transform.position;
         MoveChunkToCentre();
-        GameManager.Instance.playerList[playerIndex].transform.SetParent(chunkTransform);
+        tempPlayerObj = GameManager.Instance.playerList[playerIndex];
+        tempPlayerObj.transform.SetParent(chunkTransform);
         if (dir == ToolDirection.Original || dir == ToolDirection.Left)
         {
             //rotate 180 around Y
             chunkTransform.rotation *= Quaternion.AngleAxis(180, Vector3.up);
-            GameManager.Instance.playerList[playerIndex].transform.rotation *= Quaternion.AngleAxis(180, Vector3.up);
+            tempPlayerObj.transform.rotation *= Quaternion.AngleAxis(180, Vector3.up);
         }
         else
         {
             //rotate 180 around X
             chunkTransform.rotation *= Quaternion.AngleAxis(180, Vector3.right);
-            GameManager.Instance.playerList[playerIndex].transform.rotation*= Quaternion.AngleAxis(180, Vector3.right);
         }
         
-        GameManager.Instance.playerList[playerIndex].transform.SetParent(GlobalParameters.Instance.playerObjs.transform);
+        tempPlayerObj.transform.SetParent(GlobalParameters.Instance.playerObjs.transform);
+        tempPlayerObj.GetComponent<PlayerController>().FlipByChunk(dir);
         
         
         foreach (var item in chunkChildList)

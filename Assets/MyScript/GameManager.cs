@@ -79,10 +79,13 @@ public class GameManager : MonoBehaviour
     
     private TMP_Text levelNameText;
 
+    private TMP_Text finalWinText;
+
     #endregion
 
 
     private int selectedLevelIndex = 0;
+    private int formerSelectedLevelIndex = 0;
 
     public static GameManager Instance { get; private set; }
 
@@ -211,6 +214,7 @@ public class GameManager : MonoBehaviour
         gamePlayPauseTitle = GamePlayPauseUI.transform.Find("Title").GetComponent<TMP_Text>();
         gamePlayPausePlayerName = GamePlayPauseUI.transform.Find("PlayerName").GetComponent<TMP_Text>();
         gamePlayPauseTime = GamePlayPauseUI.transform.Find("Time").GetComponent<TMP_Text>();
+        finalWinText = GamePlayPauseUI.transform.Find("FinalWin").GetComponent<TMP_Text>();
         GamePlayPauseUI.SetActive(false);
     }
 
@@ -247,8 +251,11 @@ public class GameManager : MonoBehaviour
 
     private void InitProgress()
     {
-        presentProgress = SaveSystem.LoadProgress(0);
-        presentProgress.slot = 0;
+        if (!TestMode)
+        {
+            presentProgress = SaveSystem.LoadProgress(0);
+            presentProgress.slot = 0;
+        }
     }
     
     #endregion
@@ -310,8 +317,7 @@ public class GameManager : MonoBehaviour
         GameButtonsObj.SetActive(true);
 
         selectedLevelIndex = 0;
-
-        //GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
+        formerSelectedLevelIndex = 0;
         GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
         
         //load local level data
@@ -355,11 +361,16 @@ public class GameManager : MonoBehaviour
             {
                 gamePlayPauseTitle.text = "Fail !";
             }
-
-            //gamePlayPausePlayerName.text = playerList[presentLevelResult.playerIndex].name;
-
             gamePlayPausePlayerName.text = "Operation: " + playerResultList[0].OperationCount;
             gamePlayPauseTime.text = "Time: " + levelTime.ToString("F1");
+            if (selectedLevelIndex == levelPreviewList.previewList.Count - 1)
+            {
+                finalWinText.text = "Completed !!!";
+            }
+            else
+            {
+                finalWinText.text = "";
+            }
         }
         else
         {
@@ -377,8 +388,8 @@ public class GameManager : MonoBehaviour
 
         //load level data
         selectedLevelIndex = 0;
+        formerSelectedLevelIndex = 0;
         GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
-        //GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
 
         //load level preview list for scroll view
         LevelScrollView.GetComponent<ScrollViewManager>().ShowLevel();
@@ -438,9 +449,12 @@ public class GameManager : MonoBehaviour
         gotResult = false;
         levelTime = 0;
         ClearResult();
-        if (GlobalParameters.Instance.presentLevel.levelID != selectedLevelIndex)
+        if (formerSelectedLevelIndex != selectedLevelIndex)
+        {
             GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
-            //GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
+            formerSelectedLevelIndex = selectedLevelIndex;
+        }
+            
 
 
         GlobalParameters.Instance.EditMode(false);
@@ -488,11 +502,14 @@ public class GameManager : MonoBehaviour
         //update selected level id before this
         Time.timeScale = 0;
 
-        if (GlobalParameters.Instance.presentLevel.levelID != selectedLevelIndex)
+        if (formerSelectedLevelIndex != selectedLevelIndex)
+        {
             GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
-            //GlobalParameters.Instance.LoadLevel(selectedLevelIndex);
+            formerSelectedLevelIndex = selectedLevelIndex;
+        }
+            
 
-        levelNameText.text = GlobalParameters.Instance.presentLevel.levelName;
+        levelNameText.text = levelPreviewList.previewList[selectedLevelIndex].levelName;
 
 
         GlobalParameters.Instance.EditMode(true);
@@ -544,6 +561,8 @@ public class GameManager : MonoBehaviour
         presentProgress.levelResultlist[selectedLevelIndex].timeDur = levelTime;
         presentProgress.levelResultlist[selectedLevelIndex].operationCount = playerResultList[0].OperationCount;
         SaveSystem.SetProgress(presentProgress.slot);
+
+            
     }
 
     #endregion
@@ -591,17 +610,20 @@ public class GameManager : MonoBehaviour
             selectedLevelIndex = index;
             return true;
         }
-            
-        
-        int formerIndex = index - 1;
-        if (presentProgress.levelResultlist.Count > formerIndex)
+
+        if (!TestMode)
         {
-            if (presentProgress.levelResultlist[formerIndex].hasPassed)
+            int formerIndex = index - 1;
+            if (presentProgress.levelResultlist.Count > formerIndex)
             {
-                selectedLevelIndex = index;
-                return true;
+                if (presentProgress.levelResultlist[formerIndex].hasPassed)
+                {
+                    selectedLevelIndex = index;
+                    return true;
+                }
             }
         }
+        
         
         //in editor we don't care if player passed the former level
         if (StateList[presentStateIndex].ThisState == StateEnum.ChooseEditorLevel || TestMode)

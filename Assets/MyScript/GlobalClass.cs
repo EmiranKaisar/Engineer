@@ -67,14 +67,7 @@ public class LevelInfo
 [Serializable]
 public class LevelPreview
 {
-    public LevelPreview(int id, string name)
-    {
-        levelID = id;
-        levelName = name;
-    }
-    public int levelID;
     public string levelName;
-    public bool hinted = false;
     public int levelType = 0;
 }
 

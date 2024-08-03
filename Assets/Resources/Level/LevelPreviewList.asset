@@ -13,59 +13,35 @@ MonoBehaviour:
   m_Name: LevelPreviewList
   m_EditorClassIdentifier: 
   previewList:
-  - levelID: 0
-    levelName: Destination
-    hinted: 0
+  - levelName: Destination
     levelType: 0
-  - levelID: 1
-    levelName: Jump
-    hinted: 0
+  - levelName: Jump
     levelType: 0
-  - levelID: 2
-    levelName: Move(1)
-    hinted: 0
+  - levelName: Move(1)
     levelType: 0
-  - levelID: 3
-    levelName: Move(2)
-    hinted: 0
+  - levelName: Move(2)
     levelType: 0
-  - levelID: 4
-    levelName: Rotate(1)
-    hinted: 0
+  - levelName: Rotate(1)
     levelType: 0
-  - levelID: 5
-    levelName: Rotate(2)
-    hinted: 0
+  - levelName: Rotate(2)
     levelType: 0
-  - levelID: 6
-    levelName: Rotate(3)
-    hinted: 0
+  - levelName: Rotate(3)
     levelType: 0
-  - levelID: 7
-    levelName: Combination
-    hinted: 0
+  - levelName: Combination
     levelType: 0
-  - levelID: 8
-    levelName: Tricky
-    hinted: 0
+  - levelName: Tricky
     levelType: 0
-  - levelID: 9
-    levelName: Attack
-    hinted: 0
+  - levelName: Attack
     levelType: 0
-  - levelID: 10
-    levelName: Killer
-    hinted: 0
+  - levelName: Killer
     levelType: 0
-  - levelID: 11
-    levelName: Flip(1)
-    hinted: 0
+  - levelName: Flip(1)
     levelType: 0
-  - levelID: 12
-    levelName: Flip(2)
-    hinted: 0
+  - levelName: Flip(2)
     levelType: 0
-  - levelID: 13
-    levelName: Flip(3)
-    hinted: 0
+  - levelName: Flip(3)
+    levelType: 0
+  - levelName: Flip(4)
+    levelType: 0
+  - levelName: Flip(5)
     levelType: 0
