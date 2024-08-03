@@ -27,6 +27,7 @@ public class GlobalParameters : MonoBehaviour
     public LevelTemplate presentLevel;
 
     private int orderInLayer = 0;
+    private bool editMode = false;
     
     public class ChunkObjPool
     {
@@ -186,6 +187,20 @@ public class GlobalParameters : MonoBehaviour
 
     }
 
+    private void Update()
+    {
+        if (editMode)
+        {
+            foreach (Transform obj in levelEditorObjs.transform)
+            {
+                if (obj.CompareTag("Chunk") &&  obj.gameObject.activeSelf)
+                {
+                    obj.GetComponent<ChunkClass>().InitProp();
+                }
+            }
+        }
+    }
+
     public bool LoadLevel(string levelName)
     {
         presentLevel = Resources.Load("Level/" + levelName) as LevelTemplate;
@@ -323,9 +338,10 @@ public class GlobalParameters : MonoBehaviour
 
     #endregion
 
-    public void EditMode(bool editMode)
+    public void EditMode(bool edit)
     {
-        if (editMode)
+        editMode = edit;
+        if (edit)
         {
             levelEditorObjs.SetActive(true);
             levelObjs.SetActive(false);

@@ -74,7 +74,7 @@ public class ChunkClass : MonoBehaviour
         InitCentre();
     }
     
-    private void InitProp()
+    public void InitProp()
     {
         int index = 0;
         foreach (var item in chunkChildList)
