@@ -122,8 +122,7 @@ public class ScrollViewManager : MonoBehaviour
     {
         int levelIndex = levelObjList[objIndex].levelIndex;
         levelObjList[objIndex].levelUI.SetActive(true);
-        levelObjList[objIndex].levelUI.GetComponentInChildren<TMP_Text>().text =
-            GameManager.Instance.levelPreviewList.previewList[levelIndex].levelName;
+        levelObjList[objIndex].levelUI.GetComponentInChildren<TMP_Text>().text = levelIndex.ToString();
     }
 
 

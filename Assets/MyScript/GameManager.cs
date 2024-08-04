@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.Mathematics;
-using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
@@ -18,6 +17,7 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public Progress presentProgress;
 
     #region Level Result
+
     public float levelTime;
 
     public class PlayerResultClass
@@ -27,6 +27,7 @@ public class GameManager : MonoBehaviour
             PlayerSuccess = success;
             OperationCount = count;
         }
+
         public bool PlayerSuccess;
         public int OperationCount;
     }
@@ -34,12 +35,13 @@ public class GameManager : MonoBehaviour
     private List<PlayerResultClass> playerResultList = new List<PlayerResultClass>();
 
     private bool gotResult = false;
+
     #endregion
 
     public List<GameObject> playerList = new List<GameObject>();
 
     public bool TestMode = true;
-    
+
 
     public delegate void StateChangeAction();
 
@@ -60,7 +62,7 @@ public class GameManager : MonoBehaviour
     private int previousStateIndex = 0;
 
     #region Supplementary UI
-    
+
     private GameObject GamePlayPauseUI;
     private GameObject EditorPauseUI;
     private GameObject GameButtonsObj;
@@ -72,14 +74,16 @@ public class GameManager : MonoBehaviour
     private Image gamePlayHintImage;
 
     private GameObject LevelScrollView;
-    
+
     private TMP_Text gamePlayPauseTitle;
     private TMP_Text gamePlayPausePlayerName;
     private TMP_Text gamePlayPauseTime;
-    
+
     private TMP_Text levelNameText;
 
     private TMP_Text finalWinText;
+
+    private GameObject slotView;
 
     #endregion
 
@@ -108,29 +112,17 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(!gotPaused)
-           levelTime += Time.deltaTime;
-        
+        if (!gotPaused)
+            levelTime += Time.deltaTime;
+
         if (Input.GetKeyDown(KeyCode.Escape) && StateList[presentStateIndex].ThisState == StateEnum.GamePlay)
         {
             StateButtonAction((int)StateEnum.GamePlayPause);
         }
-        
-        if(Input.GetKeyDown(KeyCode.L) && presentProgress != null)
-            LogAllResults();
-    }
-
-    private void LogAllResults()
-    {
-        int index = 0;
-        foreach (var item in presentProgress.levelResultlist)
-        {
-            Debug.Log("level: " + index + "; time: " + item.timeDur + "; operation: " + item.operationCount);
-            index++;
-        }
     }
 
     #region Init
+
     private void CheckState()
     {
         for (int i = 0; i < StateList.Count; i++)
@@ -161,6 +153,9 @@ public class GameManager : MonoBehaviour
                 EditorPauseUI = StateList[index].UIObj.transform.Find("PauseUI").gameObject;
                 levelNameText = StateList[index].UIObj.transform.Find("Title").GetComponent<TMP_Text>();
                 EditorPauseUI.SetActive(false);
+                return;
+            case StateEnum.ChoosePlayer:
+                slotView = StateList[index].UIObj.transform.Find("SlotView").gameObject;
                 return;
         }
     }
@@ -223,7 +218,7 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0;
         InitUI();
         InitPlayerResultList();
-        InitProgress();
+        //InitProgress();
     }
 
     private void InitUI()
@@ -238,7 +233,7 @@ public class GameManager : MonoBehaviour
 
         ShowUI(homeIndex);
     }
-    
+
     private void InitPlayerResultList()
     {
         playerResultList.Clear();
@@ -248,16 +243,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
-    private void InitProgress()
-    {
-        if (!TestMode)
-        {
-            presentProgress = SaveSystem.LoadProgress(0);
-            presentProgress.slot = 0;
-        }
-    }
-    
     #endregion
 
     #region Change state
@@ -309,6 +294,7 @@ public class GameManager : MonoBehaviour
 
     private void GotoChoosePlayerAction()
     {
+        slotView.GetComponent<SlotVeiwManager>().InitSlotView();
     }
 
     private void GotoChooseLevelAction()
@@ -319,7 +305,7 @@ public class GameManager : MonoBehaviour
         selectedLevelIndex = 0;
         formerSelectedLevelIndex = 0;
         GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
-        
+
         //load local level data
         LevelScrollView.GetComponent<ScrollViewManager>().ShowLevel();
     }
@@ -329,14 +315,13 @@ public class GameManager : MonoBehaviour
         //set parameters
         Time.timeScale = 1;
         gotPaused = false;
-        
+
         //set UI
         GamePlayPauseUI.SetActive(false);
         HintUI.SetActive(false);
         if (starGlowObj != null)
             starGlowObj.SetActive(false);
 
-        
 
         if (StateList[previousStateIndex].ThisState != StateEnum.GamePlayPause &&
             StateList[previousStateIndex].ThisState != StateEnum.GamePlayHint)
@@ -361,6 +346,7 @@ public class GameManager : MonoBehaviour
             {
                 gamePlayPauseTitle.text = "Fail !";
             }
+
             gamePlayPausePlayerName.text = "Operation: " + playerResultList[0].OperationCount;
             gamePlayPauseTime.text = "Time: " + levelTime.ToString("F1");
             if (selectedLevelIndex == levelPreviewList.previewList.Count - 1)
@@ -456,7 +442,6 @@ public class GameManager : MonoBehaviour
             GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
             formerSelectedLevelIndex = selectedLevelIndex;
         }
-            
 
 
         GlobalParameters.Instance.EditMode(false);
@@ -471,7 +456,7 @@ public class GameManager : MonoBehaviour
 
         if (!TestMode)
         {
-            if(presentProgress.levelResultlist.Count <= selectedLevelIndex)
+            if (presentProgress.levelResultlist.Count <= selectedLevelIndex)
                 presentProgress.levelResultlist.Add(new LevelResult());
 
             presentProgress.lastPlayDate = DateTime.Now.Date.ToString("MM/dd/yyyy HH:mm");
@@ -481,14 +466,11 @@ public class GameManager : MonoBehaviour
                 if (GlobalParameters.Instance.presentLevel.levelDescription.thisImage != null)
                 {
                     StateButtonAction((int)StateEnum.GamePlayHint);
-                
                 }
-            
+
                 presentProgress.levelResultlist[selectedLevelIndex].hinted = true;
             }
         }
-        
-        
     }
 
     private void StartPlayerComponents()
@@ -509,7 +491,7 @@ public class GameManager : MonoBehaviour
             GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
             formerSelectedLevelIndex = selectedLevelIndex;
         }
-            
+
 
         levelNameText.text = levelPreviewList.previewList[selectedLevelIndex].levelName;
 
@@ -518,7 +500,7 @@ public class GameManager : MonoBehaviour
 
         BagManager.Instance.BagUI.transform.SetParent(StateList[(int)StateEnum.MapEditor].UIObj.transform);
     }
-    
+
 
     private void ConfirmExistEditor()
     {
@@ -535,8 +517,8 @@ public class GameManager : MonoBehaviour
 
     public void QuitGame()
     {
-        if(!TestMode)
-           SaveSystem.SetProgress(presentProgress.slot);
+        if (!TestMode)
+            SaveSystem.SetProgress(presentProgress.slot);
         Application.Quit();
     }
 
@@ -558,17 +540,15 @@ public class GameManager : MonoBehaviour
 
     private void SetSuccessProgress()
     {
-        presentProgress.lastPlayDate = DateTime.Now.Date.ToString("MM/dd/yyyy HH:mm");
+        presentProgress.lastPlayDate = DateTime.Now.Date.ToString("d");
         presentProgress.levelResultlist[selectedLevelIndex].hasPassed = true;
         presentProgress.levelResultlist[selectedLevelIndex].timeDur = levelTime;
         presentProgress.levelResultlist[selectedLevelIndex].operationCount = playerResultList[0].OperationCount;
         SaveSystem.SetProgress(presentProgress.slot);
-
-            
     }
 
     #endregion
-    
+
     #region API
 
     public void IncrementPlayerOperactionCount(int playerIndex)
@@ -593,17 +573,14 @@ public class GameManager : MonoBehaviour
         if (success)
         {
             //save the result as local data
-            if(!TestMode)
+            if (!TestMode)
                 SetSuccessProgress();
         }
         else
         {
             StateButtonAction((int)StateEnum.GamePlayPause);
         }
-        
     }
-    
-    
 
     public bool SelectLevel(int index)
     {
@@ -625,8 +602,8 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-        
-        
+
+
         //in editor we don't care if player passed the former level
         if (StateList[presentStateIndex].ThisState == StateEnum.ChooseEditorLevel || TestMode)
         {
@@ -637,6 +614,15 @@ public class GameManager : MonoBehaviour
         return false;
     }
 
+    public void SelectProgress(int index)
+    {
+        if (TestMode)
+            index = 0;
+        
+        presentProgress = SaveSystem.LoadProgress(index);
+        presentProgress.slot = index;
+    }
+
     public void PlayStarGlowAnimation(GameObject targetObj)
     {
         if (starAnimation != null)
@@ -644,7 +630,6 @@ public class GameManager : MonoBehaviour
         starAnimation = StarAnimation(targetObj);
         StartCoroutine(starAnimation);
     }
-    
 
     #endregion
 

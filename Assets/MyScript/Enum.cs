@@ -67,6 +67,12 @@ public enum PlayerAudioEnum
     StarGlow,
 }
 
+public enum ColorTemplate
+{
+    UIbgOriginal,
+    UIbgHighLighted,
+}
+
 
 public enum LevelType
 {

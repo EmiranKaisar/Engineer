@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Collections.Generic;
 
 public static class SaveSystem
 {
@@ -24,8 +23,7 @@ public static class SaveSystem
         }
         else
         {
-            Debug.LogError("file not found in" + path + "it will be created then");
-            return new Progress(index, DateTime.Now.Date.ToString("MM/dd/yyyy HH:mm"));
+            return new Progress(index, DateTime.Now.Date.ToString("d"));
         }
     }
 
