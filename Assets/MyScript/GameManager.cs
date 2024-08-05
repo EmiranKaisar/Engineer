@@ -8,8 +8,6 @@ using Unity.Mathematics;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] public List<BagTool> toolStoreList;
-
     public GameObject starGlowPrefab;
 
     public LevelPreviewList levelPreviewList;
@@ -315,6 +313,7 @@ public class GameManager : MonoBehaviour
         //set parameters
         Time.timeScale = 1;
         gotPaused = false;
+        ResetPlayerJumpTimer();
 
         //set UI
         GamePlayPauseUI.SetActive(false);
@@ -335,6 +334,7 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0;
 
         GamePlayPauseUI.SetActive(true);
+        gotPaused = true;
 
         if (gotResult)
         {
@@ -412,6 +412,8 @@ public class GameManager : MonoBehaviour
 
         //show hint
         HintUI.SetActive(true);
+        
+        gotPaused = true;
 
         if (GlobalParameters.Instance.presentLevel.levelDescription.thisImage != null)
         {
@@ -437,6 +439,7 @@ public class GameManager : MonoBehaviour
         gotResult = false;
         levelTime = 0;
         ClearResult();
+        ResetPlayerJumpTimer();
         if (formerSelectedLevelIndex != selectedLevelIndex)
         {
             GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
@@ -478,6 +481,14 @@ public class GameManager : MonoBehaviour
         foreach (var obj in playerList)
         {
             obj.GetComponent<PlayerController>().PlayerAlive();
+        }
+    }
+
+    private void ResetPlayerJumpTimer()
+    {
+        foreach (var obj in playerList)
+        {
+            obj.GetComponent<PlayerController>().ResetJumpTimer();
         }
     }
 
@@ -550,6 +561,11 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region API
+
+    public bool IfGamePaused()
+    {
+        return gotPaused;
+    }
 
     public void IncrementPlayerOperactionCount(int playerIndex)
     {

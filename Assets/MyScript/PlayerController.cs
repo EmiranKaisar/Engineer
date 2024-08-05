@@ -236,7 +236,7 @@ public class PlayerController : MonoBehaviour, IAlive
         
 
         
-        if (jump)
+        if (jump && !GameManager.Instance.IfGamePaused())
         {
             jumpTimer = jumpBufferTime;
         }
@@ -258,6 +258,11 @@ public class PlayerController : MonoBehaviour, IAlive
                 ApplyJump();
             }
         }
+    }
+
+    public void ResetJumpTimer()
+    {
+        jumpTimer = 0;
     }
 
     
