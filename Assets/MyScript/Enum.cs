@@ -49,6 +49,7 @@ public enum StateEnum
     MapEditor,
     MapEditorPause,
     GamePlayHint,
+    Option,
 }
 
 public enum DetectorEnum

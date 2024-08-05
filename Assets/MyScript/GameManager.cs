@@ -218,7 +218,6 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0;
         InitUI();
         InitPlayerResultList();
-        //InitProgress();
     }
 
     private void InitUI()
@@ -290,6 +289,7 @@ public class GameManager : MonoBehaviour
 
     private void GotoHomeAction()
     {
+        
     }
 
     private void GotoChoosePlayerAction()

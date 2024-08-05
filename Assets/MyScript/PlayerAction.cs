@@ -12,13 +12,6 @@ public class PlayerAction : MonoBehaviour
     private float horizontalMove = 0f;
 
     private bool jump;
-
-    private bool clingRightWall;
-
-    private bool clingLeftWall;
-
-    private float jumpPressedThreshold = 0.2f;
-    private float jumpPressedDur = 0;
     
 
     // Update is called once per frame
@@ -31,8 +24,6 @@ public class PlayerAction : MonoBehaviour
             jump = true;
         }
         
-
-
         if (Input.GetKeyDown(KeyCode.S))
         {
             playerController.StampCandidate();
@@ -42,10 +33,6 @@ public class PlayerAction : MonoBehaviour
         {
             playerController.CollectCandidate();
         }
-        
-        
-        
-
     }
 
     private void FixedUpdate()
@@ -54,4 +41,5 @@ public class PlayerAction : MonoBehaviour
         jump = false;
         
     }
+    
 }
