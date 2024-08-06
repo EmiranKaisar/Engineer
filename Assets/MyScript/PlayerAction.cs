@@ -18,7 +18,7 @@ public class PlayerAction : MonoBehaviour
         switch (ctx.phase)
         {
             case InputActionPhase.Performed:
-                horizontalMove = ctx.ReadValue<Vector2>().x * playerSpeed;
+                horizontalMove = ctx.ReadValue<float>()* playerSpeed;
                 break;
             case InputActionPhase.Canceled:
                 horizontalMove = 0;

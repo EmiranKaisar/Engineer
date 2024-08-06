@@ -236,11 +236,20 @@ public class PlayerController : MonoBehaviour, IAlive
         
 
         
-        if (jump && !GameManager.Instance.IfGamePaused())
+        // if (jump && !GameManager.Instance.IfGamePaused())
+        // {
+        //     jumpTimer = jumpBufferTime;
+        // }else if (GameManager.Instance.IfGamePaused())
+        // {
+        //     jumpTimer = -1;
+        // }
+        // TimeBufferJump();
+
+        if (m_Grounded || (m_Walled && canJumpOnWall))
         {
-            jumpTimer = jumpBufferTime;
+            if(jump)
+                ApplyJump();
         }
-        TimeBufferJump();
 
 
         ApplyBound();

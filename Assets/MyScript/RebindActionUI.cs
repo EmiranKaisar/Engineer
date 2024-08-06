@@ -164,7 +164,6 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
         public bool ResolveActionAndBinding(out InputAction action, out int bindingIndex)
         {
             bindingIndex = -1;
-
             action = m_Action?.action;
             if (action == null)
                 return false;

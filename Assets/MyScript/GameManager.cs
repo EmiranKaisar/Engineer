@@ -335,6 +335,8 @@ public class GameManager : MonoBehaviour
 
         GamePlayPauseUI.SetActive(true);
         gotPaused = true;
+        
+        ResetPlayerJumpTimer();
 
         if (gotResult)
         {
@@ -414,6 +416,8 @@ public class GameManager : MonoBehaviour
         HintUI.SetActive(true);
         
         gotPaused = true;
+        
+        ResetPlayerJumpTimer();
 
         if (GlobalParameters.Instance.presentLevel.levelDescription.thisImage != null)
         {
