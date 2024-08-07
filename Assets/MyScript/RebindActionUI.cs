@@ -366,6 +366,7 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
                     component.UpdateBindingDisplay();
             }
         }
+        
 
         [Tooltip("Reference to action that is to be rebound from the UI.")]
         [SerializeField]

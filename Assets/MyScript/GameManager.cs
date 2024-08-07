@@ -267,6 +267,8 @@ public class GameManager : MonoBehaviour
         }
 
         StateList[presentStateIndex].stateAction?.Invoke();
+        
+        DecideInputMap();
     }
 
     //隐藏对应UI
@@ -279,6 +281,26 @@ public class GameManager : MonoBehaviour
     private void ShowUI(int _index)
     {
         StateList[_index].UIObj.SetActive(true);
+    }
+
+    private void DecideInputMap()
+    {
+        if (presentStateIndex == (int)StateEnum.GamePlay)
+        {
+            SetInputMap("Player");
+        }
+        else
+        {
+            SetInputMap("UI");
+        }
+    }
+
+    private void SetInputMap(string map)
+    {
+        foreach (var obj in playerList)
+        {
+            //obj.GetComponent<PlayerAction>().SwitchActionMap(map);
+        }
     }
 
     #endregion
