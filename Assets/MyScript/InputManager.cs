@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Samples.RebindUI;
 using UnityEngine.Events;
 using TMPro;
+using UnityEditor.Rendering.BuiltIn.ShaderGraph;
 using UnityEngine.UI;
 
 
@@ -48,10 +49,12 @@ public class InputManager : MonoBehaviour
         int index = 0;
         foreach (var bind in myInputSetting.bindings)
         {
-            if (rebindButtonArr.Length > index)
+            if (rebindButtonArr.Length > index && bind.groups == "Keyboard")
             {
                 TMP_Text bindingText = rebindButtonArr[index].GetComponentInChildren<TMP_Text>();
-                
+                InputAction action = ReturnActionByBindingID(bind.id.ToString());
+                m_BindingText = bindingText;
+                UpdateBindingDisplay(action, action.bindings.IndexOf(x => x.id == bind.id));
                 rebindButtonArr[index].GetComponent<Button>().onClick.AddListener(() =>
                     ClickRebindButtonAction(this, bind.id.ToString(), bindingText));
                 index++;
@@ -63,7 +66,7 @@ public class InputManager : MonoBehaviour
 
     }
 
-    private void ClickRebindButtonAction(InputManager inputManager, string bindID ,TMP_Text bindTextUI)
+    private void ClickRebindButtonAction(InputManager inputManager, string bindID, TMP_Text bindTextUI)
     {
         inputManager.StartRebind(bindID);
         m_BindingText = bindTextUI;
@@ -149,8 +152,7 @@ public class InputManager : MonoBehaviour
         }
 
         action.Disable();
-        
-        Debug.Log(bindingIndex);
+
         // Configure the rebind.
         m_RebindOperation = action.PerformInteractiveRebinding(bindingIndex)
             .OnCancel(
@@ -181,6 +183,7 @@ public class InputManager : MonoBehaviour
         m_RebindOverlay?.SetActive(true);
         if (m_RebindText != null)
         {
+            Debug.Log(m_RebindOperation.expectedControlType);
             var text = !string.IsNullOrEmpty(m_RebindOperation.expectedControlType)
                 ? $"{partName}Waiting for {m_RebindOperation.expectedControlType} input..."
                 : $"{partName}Waiting for input...";
@@ -212,6 +215,10 @@ public class InputManager : MonoBehaviour
             if (bindingIndex != -1)
                 displayString = action.GetBindingDisplayString(bindingIndex, out deviceLayoutName, out controlPath, m_DisplayStringOptions);
         }
+        
+        // Set on label (if any).
+        if (m_BindingText != null)
+            m_BindingText.text = displayString;
         
 
         // Give listeners a chance to configure UI in response.
