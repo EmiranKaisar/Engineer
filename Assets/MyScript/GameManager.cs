@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -117,9 +118,13 @@ public class GameManager : MonoBehaviour
     {
         //choose the first progress
         SelectProgress(0);
-        
+
         //start the level the progress indicate
         SelectLevel(ShouldPlayLevel());
+        
+        selectedLevelIndex = 0;
+        formerSelectedLevelIndex = 0;
+        GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
     }
 
     // Update is called once per frame
@@ -494,8 +499,6 @@ public class GameManager : MonoBehaviour
         gotResult = false;
         levelTime = 0;
         ClearResult();
-
-
         
         if (formerSelectedLevelIndex != selectedLevelIndex)
         {
@@ -603,7 +606,18 @@ public class GameManager : MonoBehaviour
         else
         {
             //exit game
-            StateButtonAction(2);
+            if (justPlay)
+            {
+                StateButtonAction(0);
+                //reset progress
+                presentProgress.levelResultlist.Clear();
+                SaveSystem.SetProgress(0);
+            }
+            else
+            {
+                StateButtonAction(2);
+            }
+            
         }
     }
 
@@ -620,6 +634,20 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region API
+
+    public void Submit()
+    {
+        if (justPlay)
+        {
+            if (presentStateIndex == (int)StateEnum.Home)
+            {
+                StateButtonAction((int)StateEnum.ChoosePlayer);
+            }else if (presentStateIndex == (int)StateEnum.GamePlayHint)
+            {
+                StateButtonAction((int)StateEnum.GamePlay);
+            }
+        }
+    }
 
     public bool IfGamePaused()
     {
@@ -742,8 +770,11 @@ public class GameManager : MonoBehaviour
         yield return starAnimDur;
         if (justPlay)
         {
-            SelectLevel(ShouldPlayLevel());
-            StartGame();
+            // SelectLevel(ShouldPlayLevel());
+            // StartGame();
+            if (starGlowObj != null)
+                starGlowObj.SetActive(false);
+            NextLevel();
         }
         else
         {

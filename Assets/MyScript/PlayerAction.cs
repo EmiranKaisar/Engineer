@@ -19,14 +19,15 @@ public class PlayerAction : MonoBehaviour
     public void SetPlayerInput(MyInputSetting setting)
     {
         playerInput = setting;
-        SwitchActionMap("Player");
+        SwitchActionMap("UI");
         playerInput.Player.Move.performed += PlayerMove;
         playerInput.Player.Move.canceled += PlayerMove;
         playerInput.Player.Put.performed += PlayerPut;
         playerInput.Player.Collect.performed += PlayerCollect;
         playerInput.Player.Jump.performed += PlayerJump;
         playerInput.UI.Move.performed += UIMove;
-        
+        playerInput.UI.Choose.performed += UIChoose;
+
     }
 
 
@@ -82,10 +83,11 @@ public class PlayerAction : MonoBehaviour
 
     public void UIChoose(InputAction.CallbackContext ctx)
     {
+        Debug.Log("ui choose ");
         switch (ctx.phase)
         {
             case InputActionPhase.Performed:
-                Debug.Log("choose");
+                GameManager.Instance.Submit();
                 break;    
         }
     }
