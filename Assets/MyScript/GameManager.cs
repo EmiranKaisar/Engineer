@@ -299,7 +299,7 @@ public class GameManager : MonoBehaviour
     {
         foreach (var obj in playerList)
         {
-            //obj.GetComponent<PlayerAction>().SwitchActionMap(map);
+            obj.GetComponent<PlayerAction>().SwitchActionMap(map);
         }
     }
 
@@ -335,7 +335,6 @@ public class GameManager : MonoBehaviour
         //set parameters
         Time.timeScale = 1;
         gotPaused = false;
-        ResetPlayerJumpTimer();
 
         //set UI
         GamePlayPauseUI.SetActive(false);
@@ -358,7 +357,6 @@ public class GameManager : MonoBehaviour
         GamePlayPauseUI.SetActive(true);
         gotPaused = true;
         
-        ResetPlayerJumpTimer();
 
         if (gotResult)
         {
@@ -439,7 +437,6 @@ public class GameManager : MonoBehaviour
         
         gotPaused = true;
         
-        ResetPlayerJumpTimer();
 
         if (GlobalParameters.Instance.presentLevel.levelDescription.thisImage != null)
         {
@@ -465,7 +462,6 @@ public class GameManager : MonoBehaviour
         gotResult = false;
         levelTime = 0;
         ClearResult();
-        ResetPlayerJumpTimer();
         if (formerSelectedLevelIndex != selectedLevelIndex)
         {
             GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
@@ -507,14 +503,6 @@ public class GameManager : MonoBehaviour
         foreach (var obj in playerList)
         {
             obj.GetComponent<PlayerController>().PlayerAlive();
-        }
-    }
-
-    private void ResetPlayerJumpTimer()
-    {
-        foreach (var obj in playerList)
-        {
-            obj.GetComponent<PlayerController>().ResetJumpTimer();
         }
     }
 

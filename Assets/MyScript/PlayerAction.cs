@@ -49,7 +49,8 @@ public class PlayerAction : MonoBehaviour
         switch (ctx.phase)
         {
             case InputActionPhase.Performed:
-                jump = true;
+                if(!GameManager.Instance.IfGamePaused())
+                  jump = true;
                 break;
         }
     }

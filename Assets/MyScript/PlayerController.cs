@@ -236,20 +236,11 @@ public class PlayerController : MonoBehaviour, IAlive
         
 
         
-        // if (jump && !GameManager.Instance.IfGamePaused())
-        // {
-        //     jumpTimer = jumpBufferTime;
-        // }else if (GameManager.Instance.IfGamePaused())
-        // {
-        //     jumpTimer = -1;
-        // }
-        // TimeBufferJump();
-
-        if (m_Grounded || (m_Walled && canJumpOnWall))
+        if (jump)
         {
-            if(jump)
-                ApplyJump();
+            jumpTimer = jumpBufferTime;
         }
+        TimeBufferJump();
 
 
         ApplyBound();
@@ -268,12 +259,6 @@ public class PlayerController : MonoBehaviour, IAlive
             }
         }
     }
-
-    public void ResetJumpTimer()
-    {
-        jumpTimer = 0;
-    }
-
     
     #endregion
 
