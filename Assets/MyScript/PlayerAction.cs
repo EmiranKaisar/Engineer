@@ -24,7 +24,9 @@ public class PlayerAction : MonoBehaviour
         playerInput.Player.Move.canceled += PlayerMove;
         playerInput.Player.Put.performed += PlayerPut;
         playerInput.Player.Collect.performed += PlayerCollect;
+        playerInput.Player.Jump.performed += PlayerJump;
         playerInput.UI.Move.performed += UIMove;
+        
     }
 
 

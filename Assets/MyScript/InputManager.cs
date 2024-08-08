@@ -16,8 +16,15 @@ public class InputManager : MonoBehaviour
     //public PlayerInput inputAction;
 
     public MyInputSetting myInputSetting;
-
-    public GameObject[] rebindButtonArr;
+    
+    [Serializable]
+    public class RebindClass
+    {
+        public string actionName;
+        public GameObject rebindButtonObj;
+    }
+    [SerializeField]
+    public RebindClass[] rebindClassArr;
 
     public static InputManager Instance { get; private set; }
 
@@ -46,21 +53,23 @@ public class InputManager : MonoBehaviour
 
     private void SetRebindButton()
     {
-        int index = 0;
         foreach (var bind in myInputSetting.bindings)
         {
-            if (rebindButtonArr.Length > index && bind.groups == "Keyboard")
+            if (bind.groups == "Keyboard")
             {
-                TMP_Text bindingText = rebindButtonArr[index].GetComponentInChildren<TMP_Text>();
-                InputAction action = ReturnActionByBindingID(bind.id.ToString());
-                m_BindingText = bindingText;
-                UpdateBindingDisplay(action, action.bindings.IndexOf(x => x.id == bind.id));
-                rebindButtonArr[index].GetComponent<Button>().onClick.AddListener(() =>
-                    ClickRebindButtonAction(this, bind.id.ToString(), bindingText));
-                index++;
-                //Debug.Log(index);
+                for (int i = 0; i < rebindClassArr.Length; i++)
+                {
+                    if (rebindClassArr[i].actionName == bind.action)
+                    {
+                        TMP_Text bindingText = rebindClassArr[i].rebindButtonObj.GetComponentInChildren<TMP_Text>();
+                        m_BindingText = bindingText;
+                        ResolveActionAndBinding(bind.id.ToString(), out var action, out int bindingIndex);
+                        UpdateBindingDisplay(action, bindingIndex);
+                        rebindClassArr[i].rebindButtonObj.GetComponent<Button>().onClick.AddListener(() =>
+                            ClickRebindButtonAction(this, bind.id.ToString(), bindingText));
+                    }
+                }
             }
-                
             
         }
 
