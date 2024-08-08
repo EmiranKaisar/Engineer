@@ -40,6 +40,8 @@ public class GameManager : MonoBehaviour
 
     public bool TestMode = true;
 
+    public bool justPlay = true;
+
 
     public delegate void StateChangeAction();
 
@@ -83,6 +85,10 @@ public class GameManager : MonoBehaviour
 
     private GameObject slotView;
 
+    private TMP_Text levelTitle;
+    
+    
+
     #endregion
 
 
@@ -107,6 +113,15 @@ public class GameManager : MonoBehaviour
         InitGame();
     }
 
+    private void JustPlay()
+    {
+        //choose the first progress
+        SelectProgress(0);
+        
+        //start the level the progress indicate
+        SelectLevel(ShouldPlayLevel());
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -115,7 +130,13 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape) && StateList[presentStateIndex].ThisState == StateEnum.GamePlay)
         {
-            StateButtonAction((int)StateEnum.GamePlayPause);
+            if(justPlay)
+                StartGame();
+            else
+            {
+                StateButtonAction((int)StateEnum.GamePlayPause);
+            }
+            
         }
     }
 
@@ -154,6 +175,9 @@ public class GameManager : MonoBehaviour
                 return;
             case StateEnum.ChoosePlayer:
                 slotView = StateList[index].UIObj.transform.Find("SlotView").gameObject;
+                return;
+            case StateEnum.GamePlay:
+                levelTitle = StateList[index].UIObj.transform.Find("LevelTitle").GetComponent<TMP_Text>();
                 return;
         }
     }
@@ -247,7 +271,13 @@ public class GameManager : MonoBehaviour
     //根据玩家的输入跳转到对应的游戏状态
     public void StateButtonAction(int actionIndex)
     {
-        //presentStateIndex = ReturnIndexByActionName(_actionName);
+        if (justPlay && actionIndex == (int)StateEnum.ChoosePlayer)
+        {
+            actionIndex = (int)StateEnum.GamePlay;
+            JustPlay();
+        }
+             
+            
         presentStateIndex = actionIndex;
 
         if (presentStateIndex != previousStateIndex)
@@ -315,6 +345,8 @@ public class GameManager : MonoBehaviour
     private void GotoChoosePlayerAction()
     {
         slotView.GetComponent<SlotVeiwManager>().InitSlotView();
+        if(justPlay)
+            JustPlay();
     }
 
     private void GotoChooseLevelAction()
@@ -462,10 +494,22 @@ public class GameManager : MonoBehaviour
         gotResult = false;
         levelTime = 0;
         ClearResult();
+
+
+        
         if (formerSelectedLevelIndex != selectedLevelIndex)
         {
             GlobalParameters.Instance.LoadLevel(levelPreviewList.previewList[selectedLevelIndex].levelName);
             formerSelectedLevelIndex = selectedLevelIndex;
+        }
+        
+        if (justPlay)
+        {
+            levelTitle.text = "Level " + (selectedLevelIndex+1);
+        }
+        else
+        {
+            levelTitle.text = "";
         }
 
 
@@ -569,7 +613,8 @@ public class GameManager : MonoBehaviour
         presentProgress.levelResultlist[selectedLevelIndex].hasPassed = true;
         presentProgress.levelResultlist[selectedLevelIndex].timeDur = levelTime;
         presentProgress.levelResultlist[selectedLevelIndex].operationCount = playerResultList[0].OperationCount;
-        SaveSystem.SetProgress(presentProgress.slot);
+        if(!TestMode)
+           SaveSystem.SetProgress(presentProgress.slot);
     }
 
     #endregion
@@ -602,14 +647,27 @@ public class GameManager : MonoBehaviour
 
         if (success)
         {
-            //save the result as local data
-            if (!TestMode)
-                SetSuccessProgress();
+            //save the result to progress
+            SetSuccessProgress();
         }
         else
         {
-            StateButtonAction((int)StateEnum.GamePlayPause);
+            if(!justPlay)
+                StateButtonAction((int)StateEnum.GamePlayPause);
         }
+        
+    }
+
+    private int ShouldPlayLevel()
+    {
+        int level = 0;
+        foreach (var result in presentProgress.levelResultlist)
+        {
+            if (result.hasPassed)
+                level++;
+        }
+
+        return level;
     }
 
     public bool SelectLevel(int index)
@@ -666,7 +724,7 @@ public class GameManager : MonoBehaviour
     #region Animation
 
     //private float starAnimDur = .4f;
-    private WaitForSeconds starAnimDur = new WaitForSeconds(0.4f);
+    private WaitForSeconds starAnimDur = new WaitForSeconds(0.6f);
     private GameObject starGlowObj;
     private IEnumerator starAnimation;
 
@@ -682,7 +740,16 @@ public class GameManager : MonoBehaviour
         starGlowObj.transform.SetParent(targetObj.transform);
         starGlowObj.SetActive(true);
         yield return starAnimDur;
-        StateButtonAction((int)StateEnum.GamePlayPause);
+        if (justPlay)
+        {
+            SelectLevel(ShouldPlayLevel());
+            StartGame();
+        }
+        else
+        {
+            StateButtonAction((int)StateEnum.GamePlayPause);
+        }
+        
     }
 
     #endregion

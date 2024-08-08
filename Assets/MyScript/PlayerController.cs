@@ -434,6 +434,7 @@ public class PlayerController : MonoBehaviour, IAlive
         m_Rigidbody2D.Sleep();
         this.GetComponent<BoxCollider2D>().enabled = false;
         this.GetComponent<PlayerAction>().enabled = false;
+        GameManager.Instance.SetResult(playerIndex, false);
         if (dieProcedure != null)
             StopCoroutine(dieProcedure);
         dieProcedure = DieProcedure();
@@ -456,13 +457,13 @@ public class PlayerController : MonoBehaviour, IAlive
         this.GetComponent<PlayerAction>().enabled = true;
     }
     
-    private WaitForSeconds dieDur = new WaitForSeconds(0.4f);
+    private WaitForSeconds dieDur = new WaitForSeconds(0.6f);
     private IEnumerator dieProcedure;
 
     private IEnumerator DieProcedure()
     {
         yield return dieDur;
-        GameManager.Instance.SetResult(playerIndex, false);
+        GameManager.Instance.StartGame();
     }
 
 
