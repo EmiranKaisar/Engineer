@@ -78,12 +78,10 @@ public class PlayerAction : MonoBehaviour
                 selectUIMove = 0;
                 break;
         }
-        Debug.Log("ui move: " + selectUIMove);
     }
 
     public void UIChoose(InputAction.CallbackContext ctx)
     {
-        Debug.Log("ui choose ");
         switch (ctx.phase)
         {
             case InputActionPhase.Performed:

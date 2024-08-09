@@ -87,6 +87,8 @@ public class GameManager : MonoBehaviour
     private GameObject slotView;
 
     private TMP_Text levelTitle;
+
+    public TMP_Text homeWinText;
     
     
 
@@ -116,6 +118,7 @@ public class GameManager : MonoBehaviour
 
     private void JustPlay()
     {
+        homeWinText.text = "";
         //choose the first progress
         SelectProgress(0);
 
@@ -612,6 +615,7 @@ public class GameManager : MonoBehaviour
                 //reset progress
                 presentProgress.levelResultlist.Clear();
                 SaveSystem.SetProgress(0);
+                homeWinText.text = "Completed !!!";
             }
             else
             {

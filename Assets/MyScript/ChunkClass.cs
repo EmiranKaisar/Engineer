@@ -99,6 +99,7 @@ public class ChunkClass : MonoBehaviour
         moveSpeed = GlobalParameters.Instance.moveToolSpeed;
         rotateDur = GlobalParameters.Instance.rotateToolDur;
         inRotateProcedure = false;
+        rotateTimer = 0;
     }
 
     private void InitCentre()
