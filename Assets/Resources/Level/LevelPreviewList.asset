@@ -33,6 +33,8 @@ MonoBehaviour:
     levelType: 0
   - levelName: Rotate(3)
     levelType: 0
+  - levelName: Rotate(4)
+    levelType: 0
   - levelName: MoveRotate(1)
     levelType: 0
   - levelName: MoveRotate(2)
@@ -40,10 +42,6 @@ MonoBehaviour:
   - levelName: MoveRotate(3)
     levelType: 0
   - levelName: MoveRotate(4)
-    levelType: 0
-  - levelName: Attack
-    levelType: 0
-  - levelName: Killer
     levelType: 0
   - levelName: Flip(1)
     levelType: 0

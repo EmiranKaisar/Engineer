@@ -12,34 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3edad888d017e401e9ecbc1e26686881, type: 3}
   m_Name: Rotate(3)
   m_EditorClassIdentifier: 
-  levelID: 6
-  levelName: Rotate(3)
   playerSpawnList:
-  - {x: -12.256312, y: -2.9817388, z: 0}
+  - {x: -3, y: 5.78, z: 0}
   sceneChunkList:
   - chunkPropList:
     - toolID: 0
       toolDirection: 0
-      toolPos: {x: -13, y: -4, z: 0}
-    - toolID: 4
-      toolDirection: 0
-      toolPos: {x: -12, y: -4, z: 0}
+      toolPos: {x: -3, y: 3, z: 0}
     - toolID: 0
       toolDirection: 0
-      toolPos: {x: -11, y: -4, z: 0}
+      toolPos: {x: -2, y: 3, z: 0}
     - toolID: 0
       toolDirection: 0
-      toolPos: {x: -10, y: -4, z: 0}
-  - chunkPropList:
-    - toolID: 5
+      toolPos: {x: -1, y: 3, z: 0}
+    - toolID: 0
+      toolDirection: 0
+      toolPos: {x: 0, y: 3, z: 0}
+    - toolID: 0
+      toolDirection: 0
+      toolPos: {x: 1, y: 3, z: 0}
+    - toolID: 0
+      toolDirection: 0
+      toolPos: {x: 2, y: 3, z: 0}
+    - toolID: 0
+      toolDirection: 0
+      toolPos: {x: 3, y: 3, z: 0}
+    - toolID: 0
+      toolDirection: 0
+      toolPos: {x: 3, y: 2, z: 0}
+    - toolID: 0
+      toolDirection: 0
+      toolPos: {x: 3, y: 1, z: 0}
+    - toolID: 0
       toolDirection: 0
       toolPos: {x: 3, y: 0, z: 0}
+    - toolID: 4
+      toolDirection: 0
+      toolPos: {x: 3, y: -1, z: 0}
+    - toolID: 5
+      toolDirection: 0
+      toolPos: {x: 2, y: -1, z: 0}
     - toolID: 0
       toolDirection: 0
-      toolPos: {x: 4, y: 0, z: 0}
-    - toolID: 0
-      toolDirection: 0
-      toolPos: {x: 5, y: 0, z: 0}
+      toolPos: {x: -3, y: 4, z: 0}
   bagToolList:
   - toolID: 2
     toolDirection: 0
