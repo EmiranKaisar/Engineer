@@ -2176,8 +2176,8 @@ MonoBehaviour:
   levelTime: 0
   playerList:
   - {fileID: 1842122954}
-  TestMode: 0
-  justPlay: 1
+  TestMode: 1
+  justPlay: 0
   StateList:
   - ThisState: 0
     UIObj: {fileID: 926137115}
@@ -5079,7 +5079,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &613244623
 RectTransform:
   m_ObjectHideFlags: 0
@@ -15603,7 +15603,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1939362553
 RectTransform:
   m_ObjectHideFlags: 0

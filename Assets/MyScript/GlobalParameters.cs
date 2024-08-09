@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class GlobalParameters : MonoBehaviour
@@ -184,7 +185,6 @@ public class GlobalParameters : MonoBehaviour
         
         chunkObjPool.InitChunkPool(10, levelObjs);
         stickableObjPool.InitStickablePool(20, levelObjs);
-
     }
 
     private void Update()
@@ -223,6 +223,8 @@ public class GlobalParameters : MonoBehaviour
         
         //get all other objs info
         GetPropInfo();
+        
+        EditorUtility.SetDirty(presentLevel);
     }
     
 
