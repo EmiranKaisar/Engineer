@@ -33,9 +33,13 @@ MonoBehaviour:
     levelType: 0
   - levelName: Rotate(3)
     levelType: 0
-  - levelName: Combination
+  - levelName: MoveRotate(1)
     levelType: 0
-  - levelName: Tricky
+  - levelName: MoveRotate(2)
+    levelType: 0
+  - levelName: MoveRotate(3)
+    levelType: 0
+  - levelName: MoveRotate(4)
     levelType: 0
   - levelName: Attack
     levelType: 0

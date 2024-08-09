@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3edad888d017e401e9ecbc1e26686881, type: 3}
-  m_Name: Combination
+  m_Name: MoveRotate(3)
   m_EditorClassIdentifier: 
   levelID: 7
   levelName: Combination

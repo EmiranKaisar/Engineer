@@ -627,8 +627,7 @@ public class GameManager : MonoBehaviour
         presentProgress.levelResultlist[selectedLevelIndex].hasPassed = true;
         presentProgress.levelResultlist[selectedLevelIndex].timeDur = levelTime;
         presentProgress.levelResultlist[selectedLevelIndex].operationCount = playerResultList[0].OperationCount;
-        if(!TestMode)
-           SaveSystem.SetProgress(presentProgress.slot);
+        SaveSystem.SetProgress(presentProgress.slot);
     }
 
     #endregion
@@ -676,7 +675,8 @@ public class GameManager : MonoBehaviour
         if (success)
         {
             //save the result to progress
-            SetSuccessProgress();
+            if(!TestMode)
+                SetSuccessProgress();
         }
         else
         {
