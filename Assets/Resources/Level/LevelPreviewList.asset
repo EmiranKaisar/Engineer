@@ -21,6 +21,12 @@ MonoBehaviour:
     levelType: 0
   - levelName: Move(2)
     levelType: 0
+  - levelName: Move(3)
+    levelType: 0
+  - levelName: Move(4)
+    levelType: 0
+  - levelName: Move(5)
+    levelType: 0
   - levelName: Rotate(1)
     levelType: 0
   - levelName: Rotate(2)

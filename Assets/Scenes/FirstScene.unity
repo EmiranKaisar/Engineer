@@ -2176,8 +2176,8 @@ MonoBehaviour:
   levelTime: 0
   playerList:
   - {fileID: 1842122954}
-  TestMode: 0
-  justPlay: 1
+  TestMode: 1
+  justPlay: 0
   StateList:
   - ThisState: 0
     UIObj: {fileID: 926137115}
